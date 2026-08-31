@@ -1,37 +1,44 @@
 public class Enemy {
-    public String Ename;
-    public int Ehp;
+    public String name;
+    public int hp;
     public int maxhp;
 
-public Enemy(String Ename, int Ehp){
-    
-    this.Ename = Ename;
-    this.Ehp = Ehp;
-    this.maxhp = Ehp;
+    public Enemy(String name, int hp) {
+        this.name = name;
+        this.hp = hp;
+        this.maxhp = hp;
+    }
 
-}
+    public void takeDamage(int damage) {
+        // Kurangi HP
+        this.hp -= damage;
 
-public void takeDamage(int damage) {
-
-        this.Ehp -= damage;
-        
-        if (Ehp < 0) {
-            Ehp = 0;
+        // HP tidak boleh negatif
+        if (this.hp < 0) {
+            this.hp = 0;
         }
-        System.out.println(Ename + " took " + damage + " damage! HP: " + Ehp + "/" + maxhp);
 
-        else if (Ehp == 0) {
-            System.out.println(Ename + " was defeated!");
+        // Tampilkan HP saat ini
+        System.out.println(name + " took " + damage
+                + " damage! HP: " + hp + "/" + maxhp);
+
+        // Jika HP 0, Enemy kalah
+        if (this.hp == 0) {
+            System.out.println(name + " was defeated!");
         }
     }
 
     public void attack(Player player, int damage) {
-        // 1. Tampilkan informasi bahwa Enemy menyerang Player dalam format: [EnemyName] unleashes bullet barrage on [PlayerName]!
-        System.out.println(Ename + "Unleashes bullet barrage on" + name + "!");
-        // 2. Panggil takeDamage() milik Player menggunakan damage yang diberikan.
-        target.takeDamage(damage);
+        // Tampilkan serangan
+        System.out.println(name
+                + " unleashes bullet barrage on "
+                + player.name + "!");
+
+        // Berikan damage ke Player
+        player.takeDamage(damage);
     }
 
-
-
-} 
+    public boolean isAlive() {
+        return hp > 0;
+    }
+}
