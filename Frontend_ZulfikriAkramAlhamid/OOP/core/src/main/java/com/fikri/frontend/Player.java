@@ -6,39 +6,33 @@ public class Player {
     public int power;
     public int spellCards;
 
-    public Player(String name, int hp, int power, int spellCard) {
+    public Player(String name, int hp, int power, int spellCards) {
         this.name = name;
         this.hp = hp;
         this.power = power;
-        this.spellCards = spellCard;
+        this.spellCards = spellCards;
     }
 
     public void takeDamage(int damage) {
-
         this.hp -= damage;
-
 
         if (this.hp < 0) {
             this.hp = 0;
         }
 
-
         if (this.hp > 0) {
             System.out.println(name + " took " + damage
-                    + " damage! Remaining HP: " + hp);
+                + " damage! Remaining HP: " + hp);
         } else {
             System.out.println(name + " has been defeated!");
         }
     }
 
     public void shoot(Enemy target) {
-
         int damage = power + 10;
 
-
         System.out.println(name + " shoots " + target.name
-                + " dealing " + damage + " DMG!");
-
+            + " dealing " + damage + " DMG!");
 
         target.takeDamage(damage);
     }
