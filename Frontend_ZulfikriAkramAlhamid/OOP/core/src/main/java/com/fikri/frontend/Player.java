@@ -1,3 +1,5 @@
+package com.fikri.frontend;
+
 public class Player {
     public String name;
     public int hp;
@@ -12,15 +14,15 @@ public class Player {
     }
 
     public void takeDamage(int damage) {
-        // Kurangi HP
+
         this.hp -= damage;
 
-        // HP tidak boleh negatif
+
         if (this.hp < 0) {
             this.hp = 0;
         }
 
-        // Tampilkan hasil damage
+
         if (this.hp > 0) {
             System.out.println(name + " took " + damage
                     + " damage! Remaining HP: " + hp);

@@ -1,4 +1,4 @@
-package com.nama.frontend;
+package com.fikri.frontend;
 
 public class Test {
     public static void main(String[] args) {

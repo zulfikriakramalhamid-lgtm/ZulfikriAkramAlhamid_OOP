@@ -1,8 +1,9 @@
-package com.nama.frontend.lwjgl3;
+package com.fikri.frontend.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.nama.frontend.Main;
+import com.fikri.frontend.Main;
+import com.fikri.frontend.lwjgl3.StartupHelper;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {

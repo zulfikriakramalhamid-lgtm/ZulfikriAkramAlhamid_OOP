@@ -1,4 +1,4 @@
-package com.nama.frontend;
+package com.fikri.frontend;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

@@ -1,3 +1,5 @@
+package com.fikri.frontend;
+
 public class Enemy {
     public String name;
     public int hp;
