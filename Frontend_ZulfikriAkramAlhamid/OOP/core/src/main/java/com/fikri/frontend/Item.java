@@ -36,6 +36,13 @@ public class Item extends GameObject {
     @Override
     public void update(float delta) {
 
-        y -= speed * delta;
+        this.y -= speed * delta;
+    }
+    public String getItemType(){
+        return itemType;
+    }
+
+    public long getScoreValue() {
+        return scoreValue;
     }
 }

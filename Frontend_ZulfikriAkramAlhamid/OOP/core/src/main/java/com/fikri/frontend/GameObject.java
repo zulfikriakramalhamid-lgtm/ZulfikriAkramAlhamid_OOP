@@ -3,6 +3,7 @@ package com.fikri.frontend;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+
 public abstract class GameObject {
 
     protected float x;
@@ -27,5 +28,47 @@ public abstract class GameObject {
     public void render(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(color);
         shapeRenderer.rect(x, y, width, height);
+    }
+
+    public float getX(){
+        return x;
+    }
+
+    public void setX(float x){
+        this.x = x;
+    }
+
+    public float getY(){
+        return y;
+    }
+
+    public float getWidth(){
+        return width;
+    }
+
+    public void setWidth(float width) {
+        if (width > 0) this.width = width;
+    }
+
+    public float getHeight(){
+        return height;
+    }
+
+    public void setHeight(float height) {
+        if (height > 0) this.height = height;
+    }
+
+    public float getSpeed(){
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        if (speed >= 0) this.speed = speed;
+    }
+    public Color getColor() {
+        return color;
+    }
+    public void setColor(Color color){
+        this.color = color;
     }
 }

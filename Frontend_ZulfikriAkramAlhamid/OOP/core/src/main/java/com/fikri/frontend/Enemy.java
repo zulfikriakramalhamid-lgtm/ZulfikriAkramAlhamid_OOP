@@ -4,9 +4,9 @@ import com.badlogic.gdx.graphics.Color;
 
 public class Enemy extends GameObject {
 
-    public String name;
-    public int hp;
-    public int maxHp;
+    private String name;
+    private int hp;
+    private int maxHp;
     protected long scoreValue;
 
 
@@ -64,5 +64,32 @@ public class Enemy extends GameObject {
 
     public boolean isAlive() {
         return hp > 0;
+    }
+    public String getName() {
+    return name;
+    }
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public int getHp(){
+        return hp;
+    }
+
+    public void setHp(int hp) {
+        this.hp = Math.max(0, hp);
+    }
+
+    public int getMaxHp(){
+        return maxHp;
+
+    }
+
+    public long getScoreValue(){
+        return scoreValue;
+    }
+
+    public void setScoreValue(long scoreValue){
+        this.scoreValue = scoreValue;
     }
 }
