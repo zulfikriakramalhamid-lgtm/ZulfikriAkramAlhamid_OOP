@@ -2,66 +2,102 @@ package com.netlab.frontend;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
+
 import com.fikri.frontend.GameObject;
 import com.fikri.frontend.Item;
 import com.fikri.frontend.Player;
-
+import com.fikri.frontend.Fairy;
+import com.fikri.frontend.Boss;
 
 public class Main extends ApplicationAdapter {
+
     private ShapeRenderer shapeRenderer;
-
-
-
-
+    private List<GameObject> gameObjects;
 
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
         gameObjects = new ArrayList<>();
 
+        // Player
+        Player player = new Player(
+            280, 40,
+            "Reimu Hakurei",
+            100, 15, 3
+        );
 
-        Player player = new Player(280, 40, "Reimu hakurei", 100, 15, 3);
+        // Fairy
+        Fairy fairy = new Fairy(
+            150, 380,
+            "Stage 1 Fairy",
+            20
+        );
 
-        Fairy fairy = new Fairy(150, 380, "Stage 1 Fairy", 20);
+        // Boss
+        Boss boss = new Boss(
+            380, 400,
+            "Cirno (Stage 2 Boss)",
+            150
+        );
 
-        Boss boss = new Boss(380, 400, "Cirno (Stage 2 Boss)", 150);
+        // Items
+        Item pointItem1 = new Item(
+            200, 450,
+            12, 12,
+            120f,
+            "Point Item",
+            1000L
+        );
 
-        Item pointItem1 = new Item(200, 450,  12, 12, 120f, "Point Item", 1000L);
-        Item pointItem2 = new Item(300, 550,  12, 12, 100f, "Point Item", 1000L);
-        Item pointItem3 = new Item(400, 550,  12, 12, 80f, "Point Item", 1000L);
+        Item pointItem2 = new Item(
+            300, 550,
+            12, 12,
+            100f,
+            "Point Item",
+            1000L
+        );
 
+        Item pointItem3 = new Item(
+            400, 650,
+            12, 12,
+            80f,
+            "Point Item",
+            1000L
+        );
 
-        List<GameObject> gameObject = new ArrayList<>();
-        gameObject.add(player);
-        gameObject.add(fairy);
-        gameObject.add(boss);
-        gameObject.add(pointItem1);
-        gameObject.add(pointItem2);
-        gameObject.add(pointItem3);
-
+        // Add semua object ke List<GameObject>
+        gameObjects.add(player);
+        gameObjects.add(fairy);
+        gameObjects.add(boss);
+        gameObjects.add(pointItem1);
+        gameObjects.add(pointItem2);
+        gameObjects.add(pointItem3);
     }
 
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
 
-        // 1. Polymorphic Update Loop: Items move downward automatically via Item.update(delta)
+        // Update semua GameObject
         for (GameObject obj : gameObjects) {
             obj.update(delta);
         }
 
-        // 2. Clear Screen
+        // Clear screen
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
-        // 3. Polymorphic Render Loop: Draw hitboxes with ShapeRenderer
+        // Render semua GameObject
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
         for (GameObject obj : gameObjects) {
             obj.render(shapeRenderer);
         }
+
         shapeRenderer.end();
     }
 
