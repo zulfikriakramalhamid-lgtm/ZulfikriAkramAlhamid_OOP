@@ -1,4 +1,4 @@
-package com.fikri.frontend;
+package com.fikri.frontend.objects;
 
 import com.badlogic.gdx.graphics.Color;
 

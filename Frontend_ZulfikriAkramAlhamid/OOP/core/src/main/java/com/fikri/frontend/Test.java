@@ -1,4 +1,6 @@
 package com.fikri.frontend;
+import com.fikri.frontend.objects.items.Item;
+import com.fikri.frontend.objects.items.ItemType;
 
 public class Test {
     public static void main(String[] args) {

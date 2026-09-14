@@ -1,9 +1,10 @@
-package com.fikri.frontend;
+package com.fikri.frontend.objects;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 
-public abstract class GameObject {
+public abstract class GameObject implements Collidable {
     protected float x;
     protected float y;
     protected float width;
@@ -21,7 +22,6 @@ public abstract class GameObject {
     }
 
     public void update(float delta) {
-        // Base update method (can be overridden by moving objects)
     }
 
     public void render(ShapeRenderer shapeRenderer) {
@@ -31,7 +31,6 @@ public abstract class GameObject {
         }
     }
 
-    // Encapsulation: Getters and Setters
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }
 
@@ -55,4 +54,18 @@ public abstract class GameObject {
 
     public Color getColor() { return color; }
     public void setColor(Color color) { this.color = color; }
+
+    @Override
+    public Rectangle getCoreHitbox() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    @Override
+    public Rectangle getGrazeHitbox() {
+        return new Rectangle(x - 10, y - 10, width + 20, height + 20);
+    }
+
+    @Override
+    public void onCollision(Collidable other) {
+    }
 }
