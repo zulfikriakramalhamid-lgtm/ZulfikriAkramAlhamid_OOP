@@ -1,7 +1,9 @@
 package com.fikri.frontend.objects.items;
 
 import com.badlogic.gdx.graphics.Color;
+import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.Player;
 
 public class Item extends GameObject {
     private String itemType;
@@ -44,6 +46,14 @@ public class Item extends GameObject {
     public void update(float delta) {
         this.y -= speed * delta;
     }
+
+    @Override
+    public void onCollision(Collidable other) {
+        // TODO: Cek apakah other yang diterima method ini adalah Player
+        // Item pickup is handled on the Player side via collectItem()
+        collectItem(Item);
+    }
+
 
     public String getItemType() {
         return itemType;

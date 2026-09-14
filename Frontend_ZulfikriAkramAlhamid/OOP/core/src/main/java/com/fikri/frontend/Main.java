@@ -46,29 +46,8 @@ public class Main extends ApplicationAdapter {
         );
 
         // Items
-        Item pointItem1 = new Item(
-            200, 450,
-            12, 12,
-            120f,
-            "Point Item",
-            1000L
-        );
-
-        Item pointItem2 = new Item(
-            300, 550,
-            12, 12,
-            100f,
-            "Point Item",
-            1000L
-        );
-
-        Item pointItem3 = new Item(
-            400, 650,
-            12, 12,
-            80f,
-            "Point Item",
-            1000L
-        );
+        powerItem = new Item(200, 450, 16, 16, 80f, ItemType.POWER, 500L);
+        pointItem = new Item(320, 480, 12, 12, 120f, ItemType.POINT, 1000L);
 
         // Add semua object ke List<GameObject>
         gameObjects.add(player);
