@@ -8,11 +8,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import com.fikri.frontend.GameObject;
-import com.fikri.frontend.Item;
-import com.fikri.frontend.Player;
-import com.fikri.frontend.Fairy;
-import com.fikri.frontend.Boss;
+import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.items.Item;
+import com.fikri.frontend.objects.Player;
+import com.fikri.frontend.objects.enemies.Fairy;
+import com.fikri.frontend.objects.enemies.Boss;
 
 public class Main extends ApplicationAdapter {
 

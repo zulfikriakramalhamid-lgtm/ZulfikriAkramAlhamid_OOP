@@ -1,6 +1,8 @@
 package com.fikri.frontend.objects;
 
 import com.badlogic.gdx.graphics.Color;
+import com.fikri.frontend.objects.enemies.Enemy;
+import com.fikri.frontend.objects.items.Item;
 
 public class Player extends GameObject {
     String name;
