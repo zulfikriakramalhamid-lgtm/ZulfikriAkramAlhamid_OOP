@@ -2,21 +2,35 @@ package com.fikri.frontend.objects.enemies;
 
 import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.Collidable;
+import com.fikri.frontend.objects.Player;
 
 public class Boss extends Enemy {
+
     public Boss(String name, int hp) {
-        super(380, 400, 48, 48, Color.BLUE, name, hp, 5000L);
+        super(name, hp);
+    }
+
+    public Boss(float x, float y) {
+        super(x, y, "Boss", 200);
     }
 
     public Boss(float x, float y, String name, int hp) {
-        super(x, y, 48, 48, Color.BLUE, name, hp, 5000L);
+        super(x, y, name, hp);
+    }
+
+    @Override
+    public void update(float delta) {
+        super.update(delta);
     }
 
     @Override
     public void onCollision(Collidable other) {
-        // TODO: Cek apakah other yang diterima method ini adalah Player
-        // TODO: Cetak "Player touches boss"
-        System.out.println("Player touches boss");
+        if (other instanceof Player player) {
+            if (canCollide()) {
+                System.out.println("Player collided with Boss!");
+                player.takeDamage(20);
+                resetCollisionCooldown();
+            }
+        }
     }
 }
-

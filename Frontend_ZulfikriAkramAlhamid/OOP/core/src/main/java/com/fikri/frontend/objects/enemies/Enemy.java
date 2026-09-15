@@ -1,60 +1,74 @@
 package com.fikri.frontend.objects.enemies;
 
 import com.badlogic.gdx.graphics.Color;
+import com.fikri.frontend.objects.Collidable;
+import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.Player;
+
+import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.Player;
 
 public class Enemy extends GameObject {
-    String name;
-    int hp;
-    int maxHp;
-    protected long scoreValue;
+    private String name;
+    private int hp;
+    private long scoreValue;
+    protected float collisionCooldown = 0f;
 
     public Enemy(String name, int hp) {
-        super(200, 380, 24, 24, 0, Color.PINK);
+        super(0, 0, 32, 32, 100f, Color.WHITE);
         this.name = name;
         this.hp = hp;
-        this.maxHp = hp;
-        this.scoreValue = 100;
+        this.scoreValue = 500;
     }
 
-    public Enemy(float x, float y, float width, float height, Color color, String name, int hp, long scoreValue) {
-        super(x, y, width, height, 0, color);
+    public Enemy(float x, float y, String name, int hp) {
+        super(x, y, 32, 32, 100f, Color.WHITE);
         this.name = name;
         this.hp = hp;
-        this.maxHp = hp;
+        this.scoreValue = 500;
+    }
+
+    public Enemy(float x, float y, float width, float height, float speed, Color color, String name, int hp, long scoreValue) {
+        super(x, y, width, height, speed, color);
+        this.name = name;
+        this.hp = hp;
         this.scoreValue = scoreValue;
     }
 
+    public void attack(Player player, int damage) {
+        System.out.println(name + " attacks " + player.getName() + " for " + damage + " DMG!");
+        player.takeDamage(damage);
+    }
+
     public boolean takeDamage(int damage) {
-        boolean wasAlive = isAlive();
-        setHp(getHp() - damage);
-        System.out.println(getName() + " took " + damage + " damage! HP: " + getHp() + "/" + getMaxHp());
-        if (wasAlive && getHp() == 0) {
-            System.out.println(getName() + " was defeated!");
+        this.hp -= damage;
+        if (this.hp <= 0) {
+            this.hp = 0;
             return true;
         }
         return false;
     }
 
-    public void attack(Player player, int damage) {
-        System.out.println(name + " unleashes bullet barrage on " + player.getName() + "!");
-        player.takeDamage(damage);
+    public boolean canCollide() {
+        return collisionCooldown <= 0;
     }
 
-    public boolean isAlive() {
-        return this.hp > 0;
+    public void resetCollisionCooldown() {
+        this.collisionCooldown = 1.0f;
     }
 
-    // Encapsulation getters and setters
+    @Override
+    public void update(float delta) {
+        if (collisionCooldown > 0) {
+            collisionCooldown -= delta;
+        }
+    }
+
+    @Override
+    public void onCollision(Collidable other) {}
+
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
     public int getHp() { return hp; }
-    public void setHp(int hp) { this.hp = Math.max(0, hp); }
-
-    public int getMaxHp() { return maxHp; }
-
     public long getScoreValue() { return scoreValue; }
-    public void setScoreValue(long scoreValue) { this.scoreValue = scoreValue; }
 }

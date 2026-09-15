@@ -1,6 +1,7 @@
 package com.fikri.frontend.objects;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.enemies.Enemy;
 import com.fikri.frontend.objects.items.Item;
@@ -8,18 +9,15 @@ import com.fikri.frontend.objects.items.ItemType;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
-
-import static java.lang.Character.getName;
-
 public class Player extends GameObject {
-    String name;
-    int hp;
-    int power;
-    int spellCards;
+    private String name;
+    private int hp;
+    private int power;
+    private int spellCards;
     private long score;
 
     public Player(String name, int hp, int power, int spellCards) {
-        super(280, 40, 32, 32, 0, Color.RED);
+        super(280, 40, 32, 32, 200f, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -28,7 +26,7 @@ public class Player extends GameObject {
     }
 
     public Player(float x, float y, String name, int hp, int power, int spellCards) {
-        super(x, y, 32, 32, 0, Color.RED);
+        super(x, y, 32, 32, 200f, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -45,92 +43,79 @@ public class Player extends GameObject {
         }
     }
 
-    private int getPower() {
-            return Player;
+    public void takeDamage(int damage) {
+        setHp(this.hp - damage);
+        System.out.println(getName() + " took " + damage + " damage! Remaining HP: " + getHp());
+    }
+
+    public void addScore(long points) {
+        this.score += points;
+        System.out.println(name + " gained " + points + " pts! Total Score: " + score);
     }
 
     public void collectItem(Item item) {
-        System.out.println(getName() + " collected " + item.getItemType() + "!");
-        if (item.getScoreValue() > 0) {
-            addScore(item.getScoreValue());
-        }
-        public void collectItem(Item item) {
-            ItemType type = item.getItemTypeEnum();
-            if (type != null) {
-                switch (type) {
-                    case POWER -> {
-                        // 1. Tambahkan power sebesar type.getPowerBonus() lewat this.power
-                        public long tpe.type.getPowerBonus(){
-                            this.power = power;
-                        }
-                        // 2. Tambahkan score sebesar item.getScoreValue() lewat addScore() (addScore() sudah otomatis mencetak "gained X pts!")
-                        addScore(item.getScoreValue()){
-                            System.out.println("Gained X pts!");
-                        }
-                        }
-                        // 3. Cetak: [name] collected POWER item! Power increased to [power]
-                    }
-                    case POINT -> {
-                        // 1. Tambahkan score sebesar item.getScoreValue() lewat addScore()
-                        addScore(item.getScoreValue());
-                        // 2. Cetak: [name] collected POINT item!
-                        System.out.println(name + " Collected POIN item!");
-                    }
-                    case BOMB -> {
-                        // 1. Tambahkan spellCards sebesar 1
-                        spellCards += 1;
-                        // 2. Tambahkan score sebesar item.getScoreValue() lewat addScore()
-                        addScore(item.getScoreValue());
-                        // 3. Cetak: [name] collected BOMB item! SpellCards: [spellCards]
-                        System.out.println(name + " Collected BOMB item! SpellCards : " + spellCards);
-                    }
-                    case LIFE -> {
-                        hp += 20;
-                        addScore(item.getScoreValue())
-                        System.out.println(name + " Collected Life item! HP : " + hp);
-                    }
+        ItemType type = item.getItemTypeEnum();
+        if (type != null) {
+            switch (type) {
+                case POWER -> {
+                    this.power += type.getPowerBonus();
+                    addScore(item.getScoreValue());
+                    System.out.println(name + " collected POWER item! Power increased to " + power);
                 }
-            } else {
-                addScore(item.getScoreValue());
-                System.out.println(name + " collected " + item.getItemType() + "!");
+                case POINT -> {
+                    addScore(item.getScoreValue());
+                    System.out.println(name + " collected POINT item!");
+                }
+                case BOMB -> {
+                    this.spellCards += 1;
+                    addScore(item.getScoreValue());
+                    System.out.println(name + " collected BOMB item! SpellCards: " + spellCards);
+                }
+                case LIFE -> {
+                    this.hp += 20;
+                    addScore(item.getScoreValue());
+                    System.out.println(name + " collected LIFE item! HP: " + hp);
+                }
             }
+        } else {
+            addScore(item.getScoreValue());
+            System.out.println(name + " collected " + item.getItemType() + "!");
         }
-
-    }
-
-    private void addScore(long scoreValue) {
     }
 
     @Override
     public void update(float delta) {
         if (Gdx.input != null) {
-            // TODO: Cek input W / UP   → y += speed * delta
-            if(Gdx.input.isKeyPressed(W) ){
-                y += speed * delta
+            if (Gdx.input.isKeyPressed(W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
+                y += speed * delta;
             }
-            // TODO: Cek input S / DOWN → y -= speed * delta
-            if(Gdx.input.isKeyPressed(S)  ){
-                y -= speed * delta
+            if (Gdx.input.isKeyPressed(S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                y -= speed * delta;
             }
-            // TODO: Cek input A / LEFT → x -= speed * delta
-            if(Gdx.input.isKeyPressed(A)  ){
-                x += speed * delta
+            if (Gdx.input.isKeyPressed(A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                x -= speed * delta;
             }
-
-            // TODO: Cek input D / RIGHT → x += speed * delta
-            if(Gdx.input.isKeyPressed(D)  ){
-                x -= speed * delta
+            if (Gdx.input.isKeyPressed(D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                x += speed * delta;
             }
         }
     }
+
     @Override
     public void onCollision(Collidable other) {
-        // TODO: Cek apakah other yang diterima method ini adalah Item
-        // TODO: Cetak "Player touches items" lalu panggil collectItem((Item) other)
-        System.out.println("Player touches items");
-        collectItem((Item)other);
+        if (other instanceof Item item) {
+            if (!item.isCollected()) {
+                item.setCollected(true);
+                collectItem(item);
+            }
+        } else if (other instanceof Enemy enemy) {
+            if (enemy.canCollide()) {
+                takeDamage(10);
+                enemy.resetCollisionCooldown();
+            }
+        }
+    }
 
-    // Encapsulation getters and setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -144,5 +129,4 @@ public class Player extends GameObject {
     public void setSpellCards(int spellCards) { this.spellCards = spellCards; }
 
     public long getScore() { return score; }
-
 }

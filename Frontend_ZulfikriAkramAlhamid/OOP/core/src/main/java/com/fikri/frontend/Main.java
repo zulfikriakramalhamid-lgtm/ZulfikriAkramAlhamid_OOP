@@ -1,4 +1,4 @@
-package com.netlab.frontend;
+package com.fikri.frontend;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.items.Item;
+import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.enemies.Fairy;
 import com.fikri.frontend.objects.enemies.Boss;
@@ -17,12 +18,12 @@ import com.fikri.frontend.objects.enemies.Boss;
 public class Main extends ApplicationAdapter {
 
     private ShapeRenderer shapeRenderer;
-    private List<GameObject> gameObjects;
+    private List<GameObject> entities;
 
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
-        gameObjects = new ArrayList<>();
+        entities = new ArrayList<>();
 
         // Player
         Player player = new Player(
@@ -46,16 +47,15 @@ public class Main extends ApplicationAdapter {
         );
 
         // Items
-        powerItem = new Item(200, 450, 16, 16, 80f, ItemType.POWER, 500L);
-        pointItem = new Item(320, 480, 12, 12, 120f, ItemType.POINT, 1000L);
+        Item powerItem = new Item(200, 450, 16, 16, 80f, ItemType.POWER, 500L);
+        Item pointItem = new Item(320, 480, 12, 12, 120f, ItemType.POINT, 1000L);
 
-        // Add semua object ke List<GameObject>
-        gameObjects.add(player);
-        gameObjects.add(fairy);
-        gameObjects.add(boss);
-        gameObjects.add(pointItem1);
-        gameObjects.add(pointItem2);
-        gameObjects.add(pointItem3);
+        // Add semua entity ke List<GameObject>
+        entities.add(player);
+        entities.add(fairy);
+        entities.add(boss);
+        entities.add(powerItem);
+        entities.add(pointItem);
     }
 
     @Override
@@ -63,8 +63,21 @@ public class Main extends ApplicationAdapter {
         float delta = Gdx.graphics.getDeltaTime();
 
         // Update semua GameObject
-        for (GameObject obj : gameObjects) {
+        for (GameObject obj : entities) {
             obj.update(delta);
+        }
+
+        // AABB Collision detection antara setiap pasangan unik entity
+        for (int i = 0; i < entities.size(); i++) {
+            for (int j = i + 1; j < entities.size(); j++) {
+                GameObject a = entities.get(i);
+                GameObject b = entities.get(j);
+
+                if (a.getCoreHitbox().overlaps(b.getCoreHitbox())) {
+                    a.onCollision(b);
+                    b.onCollision(a);
+                }
+            }
         }
 
         // Clear screen
@@ -73,7 +86,7 @@ public class Main extends ApplicationAdapter {
         // Render semua GameObject
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        for (GameObject obj : gameObjects) {
+        for (GameObject obj : entities) {
             obj.render(shapeRenderer);
         }
 
