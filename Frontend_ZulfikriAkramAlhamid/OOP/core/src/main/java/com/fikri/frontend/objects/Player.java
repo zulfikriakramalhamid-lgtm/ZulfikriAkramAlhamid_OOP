@@ -3,6 +3,7 @@ package com.fikri.frontend.objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.enemies.Enemy;
 import com.fikri.frontend.objects.items.Item;
 import com.fikri.frontend.objects.items.ItemType;
@@ -41,6 +42,15 @@ public class Player extends GameObject {
         if (defeated) {
             addScore(target.getScoreValue());
         }
+    }
+
+    // Soal 10: Method shootBullet()
+    public Bullet shootBullet() {
+        int damage = 10 + power;
+        System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
+        float bulletX = this.x + (this.width / 2f) - 4f;
+        float bulletY = this.y + this.height;
+        return new Bullet(bulletX, bulletY, BulletType.AMULET, damage);
     }
 
     public void takeDamage(int damage) {

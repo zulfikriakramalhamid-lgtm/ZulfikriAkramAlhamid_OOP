@@ -12,6 +12,9 @@ public abstract class GameObject implements Collidable {
     protected float speed;
     protected Color color;
 
+    // Soal 5: Attribute active
+    protected boolean active = true;
+
     public GameObject(float x, float y, float width, float height, float speed, Color color) {
         this.x = x;
         this.y = y;
@@ -24,11 +27,27 @@ public abstract class GameObject implements Collidable {
     public void update(float delta) {
     }
 
+    // Soal 6: Method isDestroyed() dan destroy()
+    public boolean isDestroyed() {
+        return !this.active;
+    }
+
+    public void destroy() {
+        this.active = false;
+    }
+
+    // Soal 7: Update render() dengan pengecekan active
     public void render(ShapeRenderer shapeRenderer) {
-        if (shapeRenderer != null && color != null) {
+        if (shapeRenderer != null && color != null && this.active) {
             shapeRenderer.setColor(color);
             shapeRenderer.rect(x, y, width, height);
         }
+    }
+
+    // Soal 8: Method isOffScreen() dengan margin 50px
+    public boolean isOffScreen(float screenWidth, float screenHeight) {
+        return (this.x < -50f || this.x > screenWidth + 50f ||
+            this.y < -50f || this.y > screenHeight + 50f);
     }
 
     public float getX() { return x; }

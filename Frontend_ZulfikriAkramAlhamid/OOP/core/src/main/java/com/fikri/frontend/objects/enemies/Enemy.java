@@ -5,13 +5,10 @@ import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.Player;
 
-import com.badlogic.gdx.graphics.Color;
-import com.fikri.frontend.objects.GameObject;
-import com.fikri.frontend.objects.Player;
-
 public class Enemy extends GameObject {
     private String name;
     private int hp;
+    private int maxHp;
     private long scoreValue;
     protected float collisionCooldown = 0f;
 
@@ -19,6 +16,7 @@ public class Enemy extends GameObject {
         super(0, 0, 32, 32, 100f, Color.WHITE);
         this.name = name;
         this.hp = hp;
+        this.maxHp = hp;
         this.scoreValue = 500;
     }
 
@@ -26,6 +24,7 @@ public class Enemy extends GameObject {
         super(x, y, 32, 32, 100f, Color.WHITE);
         this.name = name;
         this.hp = hp;
+        this.maxHp = hp;
         this.scoreValue = 500;
     }
 
@@ -33,7 +32,12 @@ public class Enemy extends GameObject {
         super(x, y, width, height, speed, color);
         this.name = name;
         this.hp = hp;
+        this.maxHp = hp;
         this.scoreValue = scoreValue;
+    }
+
+    public boolean isAlive() {
+        return this.hp > 0;
     }
 
     public void attack(Player player, int damage) {
@@ -41,10 +45,17 @@ public class Enemy extends GameObject {
         player.takeDamage(damage);
     }
 
+    // Soal 9: Auto-destroy saat defeated
     public boolean takeDamage(int damage) {
+        boolean wasAlive = isAlive();
         this.hp -= damage;
-        if (this.hp <= 0) {
+        if (this.hp < 0) {
             this.hp = 0;
+        }
+        System.out.println(name + " took " + damage + " damage! HP: " + this.hp + "/" + this.maxHp);
+        if (wasAlive && this.hp == 0) {
+            System.out.println(name + " was defeated!");
+            destroy();
             return true;
         }
         return false;
