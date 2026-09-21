@@ -19,12 +19,6 @@ public class Fairy extends Enemy {
     }
 
     @Override
-    public void update(float delta) {
-        super.update(delta);
-        y -= speed * delta;
-    }
-
-    @Override
     public void onCollision(Collidable other) {
         if (other instanceof Player player) {
             if (canCollide()) {
