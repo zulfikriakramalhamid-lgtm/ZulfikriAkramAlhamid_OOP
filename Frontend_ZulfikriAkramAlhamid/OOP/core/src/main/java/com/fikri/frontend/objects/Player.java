@@ -64,6 +64,7 @@ public class Player extends GameObject {
     }
 
     public void collectItem(Item item) {
+        if (item.isDestroyed()) return;
         ItemType type = item.getItemTypeEnum();
         if (type != null) {
             switch (type) {
@@ -91,6 +92,7 @@ public class Player extends GameObject {
             addScore(item.getScoreValue());
             System.out.println(name + " collected " + item.getItemType() + "!");
         }
+        item.destroy();
     }
 
     @Override

@@ -1,10 +1,12 @@
 package com.fikri.frontend;
+
 import com.fikri.frontend.objects.enemies.Boss;
 import com.fikri.frontend.objects.enemies.Fairy;
 import com.fikri.frontend.objects.items.Item;
 import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.enemies.Enemy;
+import com.fikri.frontend.objects.bullets.Bullet;
 
 public class Test {
     public static void main(String[] args) {
@@ -65,5 +67,17 @@ public class Test {
         System.out.println("Final Score: " + reimu2.getScore() + " pts");
 
         System.out.println("\n=== Module 2 Test Completed Successfully ===");
+
+
+        // ==========================================
+        // PRE-CS MODULE 4: SANITY CHECK
+        // ==========================================
+        System.out.println("\n\n=== PRE-CS MODULE 4: SANITY CHECK ===");
+        Player reimuModule4 = new Player("Reimu Hakurei", 100, 15, 3);
+        Bullet bullet = reimuModule4.shootBullet();
+        System.out.println("Bullet created at: (" + bullet.getX() + ", " + bullet.getY() + ") | Damage: " + bullet.getDamage());
+        bullet.update(0.1f);
+        System.out.println("Bullet Y after 0.1s: " + bullet.getY());
+        System.out.println("Is bullet off screen? " + bullet.isOffScreen(640, 480));
     }
 }

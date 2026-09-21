@@ -2,7 +2,9 @@ package com.fikri.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.BulletType;
+import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.enemies.Enemy;
 
 public class Bullet extends GameObject {
     private BulletType bulletType;
@@ -28,6 +30,22 @@ public class Bullet extends GameObject {
         this.y += this.speed * delta;
     }
 
+
+    @Override
+    public void onCollision(Collidable other) {
+        if (other instanceof Enemy enemy) {
+            // 1. Tampilkan pesan bahwa Bullet mengenai Enemy dalam format:
+            System.out.println("Bullet Hit" + enemy.getName() + " For" + damage + " DMG!");
+            //    Bullet hit [EnemyName] for [damage] DMG!
+            enemy.takeDamage(damage);
+            destroy();
+
+            // 2. Panggil takeDamage() milik Enemy dengan damage milik Bullet ini.
+
+            // 3. Bikin si bullet hancur (destroy) setelah mengenai Enemy, apapun hasilnya
+            //    (baik enemy kalah atau masih hidup), krn satu bullet cuma boleh kena satu target.
+        }
+    }
     public BulletType getBulletType() {
         return bulletType;
     }
@@ -35,4 +53,5 @@ public class Bullet extends GameObject {
     public int getDamage() {
         return damage;
     }
+
 }
