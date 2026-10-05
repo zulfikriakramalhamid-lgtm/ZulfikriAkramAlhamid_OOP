@@ -1,6 +1,9 @@
 package com.fikri.frontend.objects;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -11,9 +14,12 @@ public abstract class GameObject implements Collidable {
     protected float height;
     protected float speed;
     protected Color color;
-
-    // Soal 5: Attribute active
     protected boolean active = true;
+
+    // Field baru untuk visual grafis (Part III)
+    protected TextureRegion sprite;
+    protected Animation<TextureRegion> animation;
+    protected float stateTime = 0f;
 
     public GameObject(float x, float y, float width, float height, float speed, Color color) {
         this.x = x;
@@ -25,9 +31,9 @@ public abstract class GameObject implements Collidable {
     }
 
     public void update(float delta) {
+        this.stateTime += delta; // Tambah waktu internal objek agar animasi bergerak
     }
 
-    // Soal 6: Method isDestroyed() dan destroy()
     public boolean isDestroyed() {
         return !this.active;
     }
@@ -36,7 +42,7 @@ public abstract class GameObject implements Collidable {
         this.active = false;
     }
 
-    // Soal 7: Update render() dengan pengecekan active
+    // Render fallback berbentuk Shape / Kotak
     public void render(ShapeRenderer shapeRenderer) {
         if (shapeRenderer != null && color != null && this.active) {
             shapeRenderer.setColor(color);
@@ -44,11 +50,29 @@ public abstract class GameObject implements Collidable {
         }
     }
 
-    // Soal 8: Method isOffScreen() dengan margin 50px
+    // Overload render dengan SpriteBatch untuk Aset Grafis (Part III)
+    public void render(SpriteBatch batch) {
+        if (batch != null && active) {
+            if (animation != null) {
+                TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
+                batch.draw(currentFrame, x, y, width, height);
+            } else if (sprite != null) {
+                batch.draw(sprite, x, y, width, height);
+            }
+        }
+    }
+
     public boolean isOffScreen(float screenWidth, float screenHeight) {
         return (this.x < -50f || this.x > screenWidth + 50f ||
             this.y < -50f || this.y > screenHeight + 50f);
     }
+
+    // Getter dan Setter Sprite & Animation
+    public TextureRegion getSprite() { return sprite; }
+    public void setSprite(TextureRegion sprite) { this.sprite = sprite; }
+
+    public Animation<TextureRegion> getAnimation() { return animation; }
+    public void setAnimation(Animation<TextureRegion> animation) { this.animation = animation; }
 
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }

@@ -47,10 +47,13 @@ public class Player extends GameObject {
     // Soal 10: Method shootBullet()
     public Bullet shootBullet() {
         int damage = 10 + power;
-        System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
         float bulletX = this.x + (this.width / 2f) - 4f;
         float bulletY = this.y + this.height;
-        return new Bullet(bulletX, bulletY, BulletType.AMULET, damage);
+        Bullet bullet = new Bullet(bulletX, bulletY, BulletType.AMULET, damage);
+
+        com.badlogic.gdx.graphics.g2d.TextureRegion sprite = com.fikri.frontend.objects.Systems.AssetManager.getInstance().getTextureRegion("bullet_danmaku");
+        bullet.setSprite(sprite);
+        return bullet;
     }
 
     public void takeDamage(int damage) {
