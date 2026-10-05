@@ -11,42 +11,61 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import com.fikri.frontend.objects.GameObject;
-import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.bullets.Bullet;
+import com.fikri.frontend.objects.enemies.Boss;
+import com.fikri.frontend.objects.enemies.Fairy;
+import com.fikri.frontend.objects.items.Item;
+import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.Systems.AssetManager;
 import com.fikri.frontend.objects.Systems.EntityFactory;
 
 public class Main extends ApplicationAdapter {
 
+    // Field class Main sesuai Soal 1 Langkah 3
     private SpriteBatch batch;
-    private List<GameObject> entities;
     private Player player;
+    private List<Fairy> fairy;
+    private Boss boss;
+    private Item powerItem;
+    private Item pointItem;
+    private List<GameObject> entities;
 
     @Override
+
     public void create() {
+        // TODO 1: Buat SpriteBatch
         batch = new SpriteBatch();
 
-        // 1. Inisialisasi AssetManager (Singleton)
-        AssetManager.getInstance().init();
-
+        // TODO 2: Inisialisasi list fairy dan entities
+        fairy = new ArrayList<>();
         entities = new ArrayList<>();
 
-        // 2. Instansiasi objek menggunakan EntityFactory
+        // TODO 3: Inisialisasi AssetManager
+        AssetManager.getInstance().init();
+
+        // TODO 4: Buat Player, Fairy, Boss, dan Item sesuai tabel
         player = EntityFactory.createPlayer(280, 40, "Reimu Hakurei", 100, 15, 3);
 
-        GameObject fairy = EntityFactory.createFairy(150, 380, "Stage 1 Fairy", 20);
-        GameObject boss = EntityFactory.createBoss(380, 400, "Cirno (Stage 2 Boss)", 150);
-        GameObject powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
-        GameObject pointItem = EntityFactory.createItem(320, 480, ItemType.POINT);
+        Fairy redFairy = EntityFactory.createFairy(150, 380, "Red Fairy", 20);
+        Fairy blueFairy = EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue");
 
-        // Add semua entity ke List<GameObject>
+        fairy.add(redFairy);
+        fairy.add(blueFairy);
+
+        boss = EntityFactory.createBoss(380, 400, "Rumia", 150);
+        powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(320, 480, ItemType.POINT);
+
+        // TODO 5: Masukkan semua objek ke entities
         entities.add(player);
-        entities.add(fairy);
+        entities.addAll(fairy);
         entities.add(boss);
         entities.add(powerItem);
         entities.add(pointItem);
     }
+
+
 
     public <T extends GameObject> void updateAndClean(List<T> list, float delta, float screenWidth, float screenHeight) {
         Iterator<T> iterator = list.iterator();
@@ -90,6 +109,7 @@ public class Main extends ApplicationAdapter {
         batch.begin();
         for (GameObject entity : entities) {
             if (!entity.isDestroyed()) {
+                // Soal 1 Langkah 4: Gambar entitas mengoper SpriteBatch
                 entity.render(batch);
             }
         }
@@ -101,6 +121,8 @@ public class Main extends ApplicationAdapter {
         if (batch != null) {
             batch.dispose();
         }
+
+        // Soal 1 Langkah 4: Pelepasan AssetManager
         AssetManager.getInstance().dispose();
     }
 }

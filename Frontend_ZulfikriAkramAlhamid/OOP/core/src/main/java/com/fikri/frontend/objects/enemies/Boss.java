@@ -1,6 +1,5 @@
 package com.fikri.frontend.objects.enemies;
 
-import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.Player;
 
@@ -10,12 +9,13 @@ public class Boss extends Enemy {
         super(name, hp);
     }
 
+
     public Boss(float x, float y) {
-        super(x, y, "Boss", 200);
+        super(x, y, 64, 64, 100f, null, "Boss", 200, 500);
     }
 
     public Boss(float x, float y, String name, int hp) {
-        super(x, y, name, hp);
+        super(x, y, 64, 64, 100f, null, name, hp, 500);
     }
 
     @Override
@@ -34,3 +34,5 @@ public class Boss extends Enemy {
         }
     }
 }
+
+
