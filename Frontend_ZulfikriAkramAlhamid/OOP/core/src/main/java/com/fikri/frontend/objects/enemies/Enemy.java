@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.Player;
+import com.fikri.frontend.objects.Systems.AudioManager;
 
 public class Enemy extends GameObject {
     private String name;
@@ -54,6 +55,7 @@ public class Enemy extends GameObject {
         }
         System.out.println(name + " took " + damage + " damage! HP: " + this.hp + "/" + this.maxHp);
         if (wasAlive && this.hp == 0) {
+            AudioManager.getInstance().playHitSfx();
             System.out.println(name + " was defeated!");
             destroy();
             return true;

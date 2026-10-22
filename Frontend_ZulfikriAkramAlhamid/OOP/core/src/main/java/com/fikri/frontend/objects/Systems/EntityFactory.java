@@ -20,20 +20,11 @@ public class EntityFactory {
     }
 
     public static Boss createBoss(float x, float y, String name, int hp) {
-
-        // 1. Buat Boss baru dengan x, y, name, dan hp dari parameter;
-        Boss boss = new Boss(x,y,name,hp);
-        //    simpan pada variabel lokal bernama `boss`.
-        // 2. Ambil animasi "boss_idle" melalui getAnimation(...)
-        Animation<TextureRegion>idleAnim = AssetManager.getInstance().getAnimation("Boss_idle");
-        //    dari AssetManager.getInstance(). Simpan hasilnya pada
-        //    variabel lokal bernama `idleAnim`.
-        // 3. Pasang idleAnim pada boss melalui boss.setAnimation(...).
+        Boss boss = new Boss(x, y, name, hp);
+        Animation<TextureRegion> idleAnim = AssetManager.getInstance().getAnimation("boss_idle");
         boss.setAnimation(idleAnim);
-        // 4. Kembalikan boss.
         return boss;
     }
-
     public static Fairy createFairy(float x, float y, String name, int hp) {
         // TODO:
         // 1. Buat Fairy baru

@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.Player;
+import com.fikri.frontend.objects.Systems.AudioManager;
 import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.enemies.Boss;
 import com.fikri.frontend.objects.enemies.Fairy;
@@ -32,32 +33,33 @@ public class Main extends ApplicationAdapter {
     private List<GameObject> entities;
 
     @Override
-
     public void create() {
-        // TODO 1: Buat SpriteBatch
         batch = new SpriteBatch();
-
-        // TODO 2: Inisialisasi list fairy dan entities
         fairy = new ArrayList<>();
         entities = new ArrayList<>();
 
-        // TODO 3: Inisialisasi AssetManager
         AssetManager.getInstance().init();
+        AudioManager.getInstance().init();
+        AudioManager.getInstance().playBgm();
 
-        // TODO 4: Buat Player, Fairy, Boss, dan Item sesuai tabel
+
+        // Player di bagian bawah
         player = EntityFactory.createPlayer(280, 40, "Reimu Hakurei", 100, 15, 3);
 
-        Fairy redFairy = EntityFactory.createFairy(150, 380, "Red Fairy", 20);
-        Fairy blueFairy = EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue");
+        // Geser koordinat X & Y Fairy dan Boss agar terpisah rapi
+        Fairy redFairy = EntityFactory.createFairy(120, 250, "Red Fairy", 20);
+        Fairy blueFairy = EntityFactory.createFairy(240, 250, "Blue Fairy", 20, "fairy_idle_blue");
 
         fairy.add(redFairy);
         fairy.add(blueFairy);
 
-        boss = EntityFactory.createBoss(380, 400, "Rumia", 150);
-        powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
-        pointItem = EntityFactory.createItem(320, 480, ItemType.POINT);
+        // Taruh Boss di kanan atas tengah (Y = 260)
+        boss = EntityFactory.createBoss(380, 260, "Rumia", 150);
 
-        // TODO 5: Masukkan semua objek ke entities
+        // Item diposisikan di antara mereka
+        powerItem = EntityFactory.createItem(180, 320, ItemType.POWER);
+        pointItem = EntityFactory.createItem(300, 320, ItemType.POINT);
+
         entities.add(player);
         entities.addAll(fairy);
         entities.add(boss);

@@ -68,6 +68,7 @@ public class AssetManager {
             TextureRegion[][] grid = TextureRegion.split(tex, tileWidth, tileHeight);
             TextureRegion[] frames = new TextureRegion[numFrames];
             for (int i = 0; i < numFrames; i++) {
+                // DIPERBAIKI: grid[row][startCol + i] (bukan grid[startCol + i][row])
                 frames[i] = grid[row][startCol + i];
             }
             Animation<TextureRegion> anim = new Animation<>(frameDuration, frames);
@@ -94,19 +95,21 @@ public class AssetManager {
 
     // === UBAH 1: Lengkapi method init() ===
     public void init() {
-        // Mendaftarkan Animasi Player & Enemies
+        // Player Animations
         registerAnimationFromSheet("player_idle", "player.png", 32, 48, 0, 0, 8, 0.125f, Animation.PlayMode.LOOP);
         registerAnimationFromSheet("player_left", "player.png", 32, 48, 1, 0, 4, 0.12f, Animation.PlayMode.LOOP);
         registerAnimationFromSheet("player_right", "player.png", 32, 48, 2, 0, 4, 0.12f, Animation.PlayMode.LOOP);
 
+        // Boss Animations (Row 0, StartCol 0, NumFrames 4)
         registerAnimationFromSheet("boss_idle", "rumia.png", 64, 64, 0, 0, 4, 0.2f, Animation.PlayMode.LOOP);
         registerAnimationFromSheet("boss_left", "rumia.png", 64, 64, 1, 0, 4, 0.15f, Animation.PlayMode.REVERSED);
         registerAnimationFromSheet("boss_right", "rumia.png", 64, 64, 2, 0, 4, 0.15f, Animation.PlayMode.NORMAL);
 
-        registerAnimationFromSheet("fairy_idle_red", "fairy.png", 32, 32, 1, 0, 8, 0.125f, Animation.PlayMode.LOOP);
-        registerAnimationFromSheet("fairy_idle_blue", "fairy.png", 32, 32, 0, 0, 8, 0.125f, Animation.PlayMode.LOOP);
+        // Fairy Animations (Row 0 = Red, Row 1 = Blue)
+        registerAnimationFromSheet("fairy_idle_red", "fairy.png", 32, 32, 0, 0, 8, 0.125f, Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("fairy_idle_blue", "fairy.png", 32, 32, 1, 0, 8, 0.125f, Animation.PlayMode.LOOP);
 
-        // Mendaftarkan Region Bullet & Items
+        // Region Bullet & Items
         registerRegionFromSheet("bullet_amulet", "amulet_reimu.png", 16, 16, 0, 0);
         registerRegionFromSheet("bullet_amulet_homing", "amulet_reimu.png", 16, 16, 1, 0);
         registerRegionFromSheet("bullet_danmaku", "bullets_small.png", 16, 16, 2, 3);
@@ -116,7 +119,6 @@ public class AssetManager {
         registerRegionFromSheet("item_bomb", "items.png", 16, 16, 0, 3);
         registerRegionFromSheet("item_life", "items.png", 16, 16, 0, 5);
     }
-
     public void dispose() {
         for (Texture texture : textureMap.values()) {
             if (texture != null) {

@@ -1,10 +1,12 @@
 package com.fikri.frontend.objects;
 
+import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.fikri.frontend.objects.Systems.AudioManager;
 import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.enemies.Enemy;
 import com.fikri.frontend.objects.items.Item;
@@ -63,7 +65,7 @@ public class Player extends GameObject {
             if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 x -= speed * delta;
                 dx -= 1;
-            }
+        }
             if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 x += speed * delta;
                 dx += 1;
@@ -105,6 +107,9 @@ public class Player extends GameObject {
     public Bullet shootBullet() {
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
+
+        AudioManager.getInstance().playShootSfx();
+
         float bulletX = this.x + (this.width / 2f) - 8f;
         float bulletY = this.y + this.height;
         return EntityFactory.createPlayerBullet(bulletX, bulletY, damage);
@@ -131,6 +136,7 @@ public class Player extends GameObject {
 
     public void collectItem(Item item) {
         System.out.println(name + " collected " + item.getItemType() + " item!");
+        AudioManager.getInstance().playItemSfx();
         switch (item.getItemType()) {
             case "POWER" -> this.power += 1;
             case "POINT" -> {
