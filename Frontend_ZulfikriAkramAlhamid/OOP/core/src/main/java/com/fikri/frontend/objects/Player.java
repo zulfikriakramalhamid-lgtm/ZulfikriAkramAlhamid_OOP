@@ -12,6 +12,9 @@ import com.fikri.frontend.objects.enemies.Enemy;
 import com.fikri.frontend.objects.items.Item;
 import com.fikri.frontend.objects.Systems.AssetManager;
 import com.fikri.frontend.objects.Systems.EntityFactory;
+import com.badlogic.gdx.math.Rectangle;
+import com.fikri.frontend.objects.Systems.BulletManager;
+import com.fikri.frontend.objects.patterns.ShootingPattern;
 
 public class Player extends GameObject {
     private String name;
@@ -155,7 +158,35 @@ public class Player extends GameObject {
             collectItem(item);
         }
     }
+    private ShootingPattern shootingPattern;
 
+    @Override
+    public Rectangle getCoreHitbox() {
+        return new Rectangle(x + (width / 2f) - 4f, y + (height / 2f) - 4f, 8f, 8f);
+    }
+
+    @Override
+    public Rectangle getGrazeHitbox() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    public void shootBullet(BulletManager bulletManager) {
+        if (bulletManager == null) return;
+
+        if (shootingPattern != null) {
+            shootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+        } else {
+            bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0f, 400f, 10 + power);
+        }
+    }
+
+    public ShootingPattern getShootingPattern() {
+        return shootingPattern;
+    }
+
+    public void setShootingPattern(ShootingPattern shootingPattern) {
+        this.shootingPattern = shootingPattern;
+    }
     // Getter
     public String getName() { return name; }
     public int getHp() { return hp; }

@@ -26,15 +26,9 @@ public class EntityFactory {
         return boss;
     }
     public static Fairy createFairy(float x, float y, String name, int hp) {
-        // TODO:
-        // 1. Buat Fairy baru
-        Fairy fairy = new Fairy(x,y,name,hp);
-        // 2. Ambil animasi "fairy_idle_red"
-        Animation<TextureRegion>idleAnim = AssetManager.getInstance().getAnimation("Fairy_idle_red");
+        Fairy fairy = new Fairy(x, y, name, hp);
+        Animation<TextureRegion> idleAnim = AssetManager.getInstance().getAnimation("fairy_idle_red");
         fairy.setAnimation(idleAnim);
-        // 3. Pasang idleAnim pada fairy
-        fairy.setAnimation(idleAnim);
-        // 4. Kembalikan fairy
         return fairy;
     }
 
