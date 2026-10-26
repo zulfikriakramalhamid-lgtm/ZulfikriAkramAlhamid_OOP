@@ -30,6 +30,7 @@ public class Main extends ApplicationAdapter {
     private Item pointItem;
     private List<GameObject> entities;
     private BulletManager bulletManager;
+    private float enemyShootTimer = 0f;
 
     @Override
     public void create() {
@@ -107,6 +108,14 @@ public class Main extends ApplicationAdapter {
         }
         batch.end();
     }
+    private void updateEnemyScheduler(float delta) {
+        enemyShootTimer += delta;
+        if (enemyShootTimer >= 1.5f) {
+            boss.shootBullet(bulletManager);
+            enemyShootTimer = 0f;
+        }
+    }
+
 
     @Override
     public void dispose() {
