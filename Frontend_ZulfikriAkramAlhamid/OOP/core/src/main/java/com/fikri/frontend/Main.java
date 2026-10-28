@@ -20,6 +20,7 @@ import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.Systems.AssetManager;
 import com.fikri.frontend.objects.Systems.EntityFactory;
 import com.fikri.frontend.objects.Systems.BulletManager;
+import com.fikri.frontend.objects.Systems.CollisionReferee;
 
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
@@ -30,6 +31,7 @@ public class Main extends ApplicationAdapter {
     private Item pointItem;
     private List<GameObject> entities;
     private BulletManager bulletManager;
+    private CollisionReferee collisionReferee;
     private float enemyShootTimer = 0f;
 
     @Override
@@ -38,6 +40,7 @@ public class Main extends ApplicationAdapter {
         fairy = new ArrayList<>();
         entities = new ArrayList<>();
         bulletManager = new BulletManager();
+        collisionReferee = new CollisionReferee();
 
         AssetManager.getInstance().init();
         AudioManager.getInstance().init();
@@ -74,6 +77,14 @@ public class Main extends ApplicationAdapter {
         }
     }
 
+    private void updateEnemyScheduler(float delta) {
+        enemyShootTimer += delta;
+        if (enemyShootTimer >= 1.5f) {
+            boss.shootBullet(bulletManager);
+            enemyShootTimer = 0f;
+        }
+    }
+
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
@@ -82,21 +93,13 @@ public class Main extends ApplicationAdapter {
             player.shootBullet(bulletManager);
         }
 
+        updateEnemyScheduler(delta);
+
         updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        for (int i = 0; i < entities.size(); i++) {
-            for (int j = i + 1; j < entities.size(); j++) {
-                GameObject a = entities.get(i);
-                GameObject b = entities.get(j);
+        bulletManager.update(delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-                if (!a.isDestroyed() && !b.isDestroyed()) {
-                    if (a.getCoreHitbox().overlaps(b.getCoreHitbox())) {
-                        a.onCollision(b);
-                        b.onCollision(a);
-                    }
-                }
-            }
-        }
+        collisionReferee.resolveCollisions(player, entities, bulletManager);
 
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
@@ -106,16 +109,9 @@ public class Main extends ApplicationAdapter {
                 entity.render(batch);
             }
         }
+        bulletManager.render(batch);
         batch.end();
     }
-    private void updateEnemyScheduler(float delta) {
-        enemyShootTimer += delta;
-        if (enemyShootTimer >= 1.5f) {
-            boss.shootBullet(bulletManager);
-            enemyShootTimer = 0f;
-        }
-    }
-
 
     @Override
     public void dispose() {

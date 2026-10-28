@@ -3,8 +3,6 @@ package com.fikri.frontend.objects.Systems;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.fikri.frontend.objects.BulletType;
 import com.fikri.frontend.objects.bullets.Bullet;
-
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,41 +22,17 @@ public class BulletManager {
         this.activeEnemyBullets = new ArrayList<>();
     }
 
-    // Peminjaman bullet Pemain dari Pool (5 poin)
     public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage) {
+        AudioManager.getInstance().playShootSfx(); // Tambahkan ini agar suara tembakan berbunyi
         Bullet bullet;
-        // TODO:
-        // 1. Cek apakah playerBulletPool tidak kosong.
-        if(!playerBulletPool.isEmpty()){
-        bullet = playerBulletPool.poll();
-        bullet.init(x,y,vx,vy,BulletType.AMULET,damage, true);
-        }
-        else{
-            bullet = EntityFactory.createPlayerBullet(x,y, damage, "Bulllet_Amulet");
-            bullet.init(x,y,vx,vy,BulletType.AMULET,damage, true);
+        if (!playerBulletPool.isEmpty()) {
+            bullet = playerBulletPool.poll();
+            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
+        } else {
+            bullet = EntityFactory.createPlayerBullet(x, y, damage, "bullet_amulet");
+            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
         }
         activePlayerBullets.add(bullet);
-        return bullet;
-        //    Kalau ya, poll dari pool. Kalau tidak, buat baru menggunakan Factory.
-        // 2. Re-initialize bullet.
-        // 3. Tambahkan bullet ke dalam daftar activePlayerBullets.
-        // 4. Kembalikan instance bullet tersebut.
-    }
-
-    // Peminjaman bullet Musuh dari Pool (5 poin)
-    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage) {
-        Bullet bullet;
-        // TODO:
-        // 1. Cek apakah playerBulletPool tidak kosong.
-        if(!enemyBulletPool.isEmpty()){
-            bullet = enemyBulletPool.poll();
-            bullet.init(x,y,vx,vy,BulletType.DANMAKU,damage, false);
-        }
-        else{
-            bullet = EntityFactory.createPlayerBullet(x,y, damage, "Bulllet_Amulet");
-            bullet.init(x,y,vx,vy,BulletType.DANMAKU,damage, false);
-        }
-        activeEnemyBullets.add(bullet);
         return bullet;
     }
 
