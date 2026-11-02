@@ -1,6 +1,7 @@
 package com.fikri.frontend.objects.Systems;
 
 import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.Systems.BulletManager;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.enemies.Enemy;

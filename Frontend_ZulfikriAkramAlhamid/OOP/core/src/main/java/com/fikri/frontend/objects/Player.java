@@ -1,48 +1,41 @@
+
 package com.fikri.frontend.objects;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.fikri.frontend.objects.Systems.AudioManager;
-import com.fikri.frontend.objects.bullets.Bullet;
-import com.fikri.frontend.objects.enemies.Enemy;
+
 import com.fikri.frontend.objects.items.Item;
-import com.fikri.frontend.objects.Systems.AssetManager;
-import com.fikri.frontend.objects.Systems.EntityFactory;
-import com.fikri.frontend.objects.Systems.BulletManager;
+import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.patterns.ShootingPattern;
+import com.fikri.frontend.objects.Systems.BulletManager;
+
+import java.util.List;
 
 public class Player extends GameObject {
+
     private String name;
     private int hp;
+    private int lives = 3;
     private int power;
     private int spellCards;
-    private int score = 0;
+    private long score;
 
-    private int currentDir = 0;
     private ShootingPattern shootingPattern;
 
-    public Player(String name, int hp) {
-        super(0, 0, 32, 48, 200f, Color.GREEN);
-        this.name = name;
-        this.hp = hp;
-        this.power = 0;
-        this.spellCards = 2;
-    }
+    private int grazeCount = 0;
+    private boolean focused = false;
 
-    public Player(String name, int hp, int power, int spellCards) {
-        super(0, 0, 32, 48, 200f, Color.GREEN);
-        this.name = name;
-        this.hp = hp;
-        this.power = power;
-        this.spellCards = spellCards;
-    }
+    private float shootTimer = 0.1f;
+    private float shootCooldown = 0.1f;
+    private float invulnerableTimer = 0f;
 
-    public Player(float x, float y, String name, int hp, int power, int spellCards) {
-        super(x, y, 32, 48, 200f, Color.GREEN);
+    public Player(float x, float y, String name,
+                  int hp, int power, int spellCards) {
+
+        super(x, y, 32f, 48f, 200f, Color.WHITE);
+
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -51,128 +44,321 @@ public class Player extends GameObject {
 
     @Override
     public void update(float delta) {
+
         super.update(delta);
 
-        float dx = 0;
+        shootTimer += delta;
 
-        if (Gdx.input != null) {
-            if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
-                y += speed * delta;
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-                y -= speed * delta;
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-                x -= speed * delta;
-                dx -= 1;
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                x += speed * delta;
-                dx += 1;
-            }
-        }
+        if (invulnerableTimer > 0f) {
+            invulnerableTimer -= delta;
 
-        updateAnimationState(dx);
-    }
-
-    public void updateAnimationState(float dx) {
-        AssetManager assets = AssetManager.getInstance();
-        if (dx < 0) {
-            if (currentDir != -1) {
-                currentDir = -1;
-                Animation<TextureRegion> anim = assets.getAnimation("player_left");
-                if (anim != null) {
-                    setAnimation(anim);
-                }
-            }
-        } else if (dx > 0) {
-            if (currentDir != 1) {
-                currentDir = 1;
-                Animation<TextureRegion> anim = assets.getAnimation("player_right");
-                if (anim != null) {
-                    setAnimation(anim);
-                }
-            }
-        } else {
-            if (currentDir != 0) {
-                currentDir = 0;
-                Animation<TextureRegion> anim = assets.getAnimation("player_idle");
-                if (anim != null) {
-                    setAnimation(anim);
-                }
+            if (invulnerableTimer < 0f) {
+                invulnerableTimer = 0f;
             }
         }
     }
 
-    public Bullet shootBullet() {
-        int damage = 10 + power;
-        AudioManager.getInstance().playShootSfx();
+    public void move(float dx, float dy) {
 
-        float bulletX = this.x + (this.width / 2f) - 8f;
-        float bulletY = this.y + this.height;
-        return EntityFactory.createPlayerBullet(bulletX, bulletY, damage);
+        this.x += dx * speed;
+        this.y += dy * speed;
+
+        clampToPlayfield();
+    }
+
+    private void clampToPlayfield() {
+
+        float minX = 32;
+        float maxX = 416 - width;
+        float minY = 16;
+        float maxY = 560 - height;
+
+        if (x < minX) x = minX;
+        if (x > maxX) x = maxX;
+        if (y < minY) y = minY;
+        if (y > maxY) y = maxY;
     }
 
     public void shootBullet(BulletManager bulletManager) {
+
         if (bulletManager == null) return;
 
-        if (shootingPattern != null) {
-            shootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+        if (shootTimer >= shootCooldown) {
+
+            if (shootingPattern != null) {
+
+                shootingPattern.execute(
+                    x + width / 2f - 8f,
+                    y + height,
+                    bulletManager,
+                    true
+                );
+
+            } else {
+
+                bulletManager.spawnPlayerBullet(
+                    x + width / 2f - 8f,
+                    y + height,
+                    0,
+                    400f,
+                    10 + power
+                );
+            }
+
+            shootTimer = 0f;
+        }
+    }
+
+    public void useBomb(
+        BulletManager bulletManager,
+        List<GameObject> entities
+    ) {
+
+        if (spellCards > 0) {
+
+            spellCards--;
+            invulnerableTimer = 5.0f;
+
+            if (bulletManager != null) {
+                bulletManager.clearEnemyBullets(entities);
+            }
+
+            System.out.println(
+                name + " unleashes SPELL CARD (Fantasy Seal)! All enemy bullets cleared!"
+            );
+
         } else {
-            bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0f, 400f, 10 + power);
+
+            System.out.println("No Spell Cards (Bombs) remaining!");
         }
     }
 
-    public void takeDamage(int damage) {
-        this.hp -= damage;
-        if (this.hp < 0) this.hp = 0;
-        if (this.hp == 0) {
-            destroy();
-        }
+    public void useBomb(BulletManager bulletManager) {
+        useBomb(bulletManager, null);
     }
 
-    public void shoot(Enemy target) {
-        int damage = 10 + getPower();
-        target.takeDamage(damage);
+    public void addGraze() {
+        this.grazeCount++;
+        addScore(50);
     }
 
-    public void collectItem(Item item) {
-        AudioManager.getInstance().playItemSfx();
-        switch (item.getItemType()) {
-            case "POWER" -> this.power += 1;
-            case "POINT" -> this.score += 100;
-            case "BOMB"  -> this.spellCards += 1;
-            case "LIFE"  -> this.hp += 20;
-        }
-        item.destroy();
+    public void addScore(long amount) {
+        this.score += amount;
     }
 
     @Override
-    public void onCollision(Collidable other) {
-        if (other instanceof Item item) {
-            collectItem(item);
+    public void render(SpriteBatch batch) {
+
+        if (batch != null && active && !isDestroyed()) {
+
+            if (invulnerableTimer > 0f) {
+
+                boolean visible =
+                    ((int) (invulnerableTimer * 16)) % 2 == 0;
+
+                if (!visible) return;
+            }
+
+            if (focused) {
+                batch.setColor(1f, 1f, 1f, 0.5f);
+            }
+
+            super.render(batch);
+
+            if (focused) {
+                batch.setColor(1f, 1f, 1f, 1.0f);
+            }
+        }
+    }
+
+    public void renderFocusIndicator(ShapeRenderer shapeRenderer) {
+
+        if (focused && shapeRenderer != null && active) {
+
+            Rectangle core = getCoreHitbox();
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+            shapeRenderer.setColor(Color.RED);
+
+            shapeRenderer.circle(
+                core.x + core.width / 2f,
+                core.y + core.height / 2f,
+                4f
+            );
+
+            shapeRenderer.setColor(Color.WHITE);
+
+            shapeRenderer.circle(
+                core.x + core.width / 2f,
+                core.y + core.height / 2f,
+                2f
+            );
+
+            shapeRenderer.end();
         }
     }
 
     @Override
     public Rectangle getCoreHitbox() {
-        return new Rectangle(x + (width / 2f) - 4f, y + (height / 2f) - 4f, 8f, 8f);
+
+        return new Rectangle(
+            x + width / 2f - 4f,
+            y + height / 2f - 4f,
+            8f,
+            8f
+        );
     }
 
-    @Override
-    public Rectangle getGrazeHitbox() {
-        return new Rectangle(x, y, width, height);
+    public void takeDamage(int damage) {
+        takeDamage(damage, null, null);
     }
 
-    public void addScore(long score) {
-        this.score += score;
+    public void takeDamage(
+        int damage,
+        BulletManager bulletManager,
+        List<GameObject> entities
+    ) {
+
+        if (isInvulnerable() || isDestroyed()) return;
+
+        this.hp -= damage;
+
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+
+        if (this.hp == 0) {
+            loseLife(bulletManager, entities);
+        }
     }
 
-    public String getName() { return name; }
-    public int getHp() { return hp; }
-    public int getPower() { return power; }
-    public int getSpellCards() { return spellCards; }
-    public int getScore() { return score; }
+    public void loseLife(
+        BulletManager bulletManager,
+        List<GameObject> entities
+    ) {
+
+        this.lives--;
+
+        if (bulletManager != null) {
+            bulletManager.clearEnemyBullets();
+        }
+
+        if (this.lives > 0) {
+            respawn();
+        } else {
+            destroy();
+        }
+    }
+
+    public void respawn() {
+
+        this.active = true;
+        this.x = 200;
+        this.y = 50;
+        this.hp = 100;
+        this.invulnerableTimer = 3.0f;
+        this.power = Math.max(10, this.power - 16);
+        this.spellCards = 3;
+    }
+
+    public void resetGame() {
+
+        this.lives = 3;
+        this.hp = 100;
+        this.power = 15;
+        this.spellCards = 3;
+        this.score = 0;
+        this.grazeCount = 0;
+
+        this.active = true;
+        this.x = 200;
+        this.y = 50;
+        this.invulnerableTimer = 3.0f;
+    }
+
+    public void collectItem(Item item) {
+
+        if (item == null || item.isDestroyed()) return;
+
+        ItemType type = item.getItemTypeEnum();
+
+        if (type != null) {
+
+            switch (type) {
+
+                case POWER -> {
+                    this.power += type.getPowerBonus();
+                    addScore(item.getScoreValue());
+                }
+
+                case POINT -> addScore(item.getScoreValue());
+
+                case BOMB -> {
+                    this.spellCards++;
+                    addScore(item.getScoreValue());
+                }
+
+                case LIFE -> {
+                    this.lives++;
+                    this.hp = 100;
+                    addScore(item.getScoreValue());
+                }
+            }
+        }
+
+        item.destroy();
+    }
+
+    // Getter
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public int getPower() {
+        return power;
+    }
+
+    public int getSpellCards() {
+        return spellCards;
+    }
+
+    public long getScore() {
+        return score;
+    }
+
+    public boolean isFocused() {
+        return focused;
+    }
+
+    public void setFocused(boolean focused) {
+        this.focused = focused;
+    }
+
+    public int getGrazeCount() {
+        return grazeCount;
+    }
+
+    public boolean isInvulnerable() {
+        return invulnerableTimer > 0f;
+    }
+
+    public float getInvulnerableTimer() {
+        return invulnerableTimer;
+    }
+
+    public int getLives() {
+        return lives;
+    }
+
+    public void setLives(int lives) {
+        this.lives = lives;
+    }
 
     public ShootingPattern getShootingPattern() {
         return shootingPattern;

@@ -32,7 +32,7 @@ public class Lwjgl3Launcher {
                 .refreshRate + 1
         );
 
-        configuration.setWindowedMode(640, 480);
+        configuration.setWindowedMode(800, 600);
 
         configuration.setWindowIcon(
             "libgdx128.png",

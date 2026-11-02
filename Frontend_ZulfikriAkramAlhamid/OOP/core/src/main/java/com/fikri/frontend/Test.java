@@ -1,83 +1,160 @@
+
 package com.fikri.frontend;
 
-import com.fikri.frontend.objects.enemies.Boss;
-import com.fikri.frontend.objects.enemies.Fairy;
-import com.fikri.frontend.objects.items.Item;
-import com.fikri.frontend.objects.items.ItemType;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.enemies.Enemy;
-import com.fikri.frontend.objects.bullets.Bullet;
+import com.fikri.frontend.objects.enemies.Fairy;
+import com.fikri.frontend.objects.enemies.Boss;
+import com.fikri.frontend.objects.items.Item;
+import com.fikri.frontend.objects.items.ItemType;
+import com.fikri.frontend.objects.Systems.BulletManager;
 
 public class Test {
-    public static void main(String[] args) {
-        // ==========================================
-        // MODULE 1: BASIC CLASSES & OBJECT INTERACTION
-        // ==========================================
-        System.out.println("=== TOUHOU OOP PRACTICUM - MODULE 1: BASIC CLASSES & OBJECT INTERACTION ===");
 
-        // Instantiating objects (Player and Enemy)
-        Player reimu = new Player("Reimu Hakurei", 100, 15, 3);
-        Enemy fairyBoss = new Enemy("Cirno (Stage 2 Boss)", 50);
+    public static void main(String[] args) {
+
+        System.out.println(
+            "=== TOUHOU OOP PRACTICUM ==="
+        );
+
+        // MODULE 1: BASIC CLASSES
+
+        System.out.println("\n=== MODULE 1 ===");
+
+        Player reimu = new Player(
+            200, 50, "Reimu Hakurei", 100, 15, 3
+        );
+
+        Enemy fairyBoss = new Enemy(
+            "Cirno (Stage 2 Boss)", 50
+        );
 
         System.out.println("\n--- Initial Battle State ---");
-        System.out.println("Player: " + reimu.getName() + " | HP: " + reimu.getHp() + " | Power: " + reimu.getPower() + " | SpellCards: " + reimu.getSpellCards());
-        System.out.println("Enemy: " + fairyBoss.getName() + " | HP: " + fairyBoss.getHp());
-        System.out.println("\n--- Turn 1: Player Shoots Enemy ---");
-        reimu.shoot(fairyBoss);
 
-        System.out.println("\n--- Turn 2: Enemy Counter-attacks ---");
+        System.out.println(
+            "Player: " + reimu.getName()
+                + " | HP: " + reimu.getHp()
+                + " | Power: " + reimu.getPower()
+                + " | SpellCards: " + reimu.getSpellCards()
+        );
+
+        System.out.println(
+            "Enemy: " + fairyBoss.getName()
+                + " | HP: " + fairyBoss.getHp()
+        );
+
+        System.out.println("\n--- Player Attacks ---");
+
+        fairyBoss.takeDamage(25);
+        fairyBoss.takeDamage(25);
+
+        System.out.println("\n--- Enemy Counter Attack ---");
+
         fairyBoss.attack(reimu, 30);
 
-        System.out.println("\n--- Turn 3: Player Shoots Enemy Finishing Blow ---");
-        reimu.shoot(fairyBoss);
-
-        System.out.println("\n--- Turn 4: Enemy Deals Fatal Damage to Reimu ---");
-        fairyBoss.attack(reimu, 80);
-
-        System.out.println("\n=== Battle Simulation Complete ===");
+        System.out.println("\nPlayer HP: " + reimu.getHp());
 
 
-        // ==========================================
-        // MODULE 2: ENCAPSULATION, INHERITANCE & SCORE SYSTEM
-        // ==========================================
-        System.out.println("\n\n=== TOUHOU OOP PRACTICUM - MODULE 2: ENCAPSULATION, INHERITANCE & SCORE SYSTEM ===");
+        // MODULE 2: INHERITANCE AND ENCAPSULATION
 
-        // Instantiating polymorphic objects
-        Player reimu2 = new Player("Reimu Hakurei", 100, 15, 3);
-        Fairy fairy = new Fairy("Stage 1 Fairy", 20);
-        Boss cirno = new Boss("Cirno (Stage 2 Boss)", 150);
-        Item pointItem = new Item(200, 450, 12, 12, 120f, "Point Item", 1000L);
+        System.out.println("\n=== MODULE 2 ===");
 
-        System.out.println("\n--- Testing Encapsulation & Inheritance ---");
-        System.out.println("Player: " + reimu2.getName() + " | Position: (" + reimu2.getX() + ", " + reimu2.getY() + ")");
-        System.out.println("Fairy:  " + fairy.getName() + " | Defeat Worth: " + fairy.getScoreValue() + " pts");
-        System.out.println("Boss:   " + cirno.getName() + " | Defeat Worth: " + cirno.getScoreValue() + " pts | Size: " + cirno.getWidth() + "x" + cirno.getHeight());
-        System.out.println("Item:   " + pointItem.getItemType() + " | Value: " + pointItem.getScoreValue() + " pts | Speed: " + pointItem.getSpeed());
+        Player reimu2 = new Player(
+            200, 50, "Reimu Hakurei", 100, 15, 3
+        );
 
-        System.out.println("\n--- Testing Item Movement Update ---");
-        System.out.println("Initial Item Y: " + pointItem.getY());
+        Fairy fairy = new Fairy(
+            "Stage 1 Fairy", 20
+        );
+
+        Boss cirno = new Boss(
+            "Cirno (Stage 2 Boss)", 150
+        );
+
+        Item pointItem = new Item(
+            200, 450, 12, 12, 120f,
+            ItemType.POINT, 1000L
+        );
+
+        System.out.println("\n--- Object Information ---");
+
+        System.out.println(
+            "Player: " + reimu2.getName()
+                + " | Position: ("
+                + reimu2.getX() + ", " + reimu2.getY() + ")"
+        );
+
+        System.out.println(
+            "Fairy: " + fairy.getName()
+                + " | Defeat Worth: "
+                + fairy.getScoreValue()
+        );
+
+        System.out.println(
+            "Boss: " + cirno.getName()
+                + " | Defeat Worth: "
+                + cirno.getScoreValue()
+        );
+
+        System.out.println(
+            "Item: " + pointItem.getItemType()
+                + " | Value: "
+                + pointItem.getScoreValue()
+        );
+
+        System.out.println("\n--- Item Movement ---");
+
+        System.out.println(
+            "Initial Item Y: " + pointItem.getY()
+        );
+
         pointItem.update(0.5f);
-        System.out.println("Item Y after 0.5s update: " + pointItem.getY() + " (linear downward movement)");
 
-        System.out.println("\n--- Testing Scoring System ---");
-        System.out.println("Initial Score: " + reimu2.getScore());
-        reimu2.shoot(fairy);
+        System.out.println(
+            "Item Y after 0.5s: " + pointItem.getY()
+        );
+
+        System.out.println("\n--- Scoring System ---");
+
+        System.out.println(
+            "Initial Score: " + reimu2.getScore()
+        );
+
         reimu2.collectItem(pointItem);
-        reimu2.shoot(cirno);
-        System.out.println("Final Score: " + reimu2.getScore() + " pts");
 
-        System.out.println("\n=== Module 2 Test Completed Successfully ===");
+        System.out.println(
+            "Final Score: " + reimu2.getScore()
+        );
 
 
-        // ==========================================
-        // PRE-CS MODULE 4: SANITY CHECK
-        // ==========================================
-        System.out.println("\n\n=== PRE-CS MODULE 4: SANITY CHECK ===");
-        Player reimuModule4 = new Player("Reimu Hakurei", 100, 15, 3);
-        Bullet bullet = reimuModule4.shootBullet();
-        System.out.println("Bullet created at: (" + bullet.getX() + ", " + bullet.getY() + ") | Damage: " + bullet.getDamage());
-        bullet.update(0.1f);
-        System.out.println("Bullet Y after 0.1s: " + bullet.getY());
-        System.out.println("Is bullet off screen? " + bullet.isOffScreen(640, 480));
+        // MODULE 4: BULLET SYSTEM
+
+        System.out.println("\n=== MODULE 4 ===");
+
+        Player reimuModule4 = new Player(
+            200, 50, "Reimu Hakurei", 100, 15, 3
+        );
+
+        BulletManager bulletManager = new BulletManager();
+
+        reimuModule4.shootBullet(bulletManager);
+
+        System.out.println(
+            "Active Player Bullets: "
+                + bulletManager.getActivePlayerBullets().size()
+        );
+
+        bulletManager.update(0.1f);
+
+        if (!bulletManager.getActivePlayerBullets().isEmpty()) {
+
+            System.out.println(
+                "Bullet Y after update: "
+                    + bulletManager.getActivePlayerBullets()
+                    .get(0).getY()
+            );
+        }
+
+        System.out.println("\n=== ALL TESTS COMPLETED ===");
     }
 }
