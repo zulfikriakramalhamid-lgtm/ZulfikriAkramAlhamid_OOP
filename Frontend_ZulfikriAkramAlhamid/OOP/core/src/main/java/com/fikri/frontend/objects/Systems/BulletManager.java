@@ -1,4 +1,3 @@
-
 package com.fikri.frontend.objects.Systems;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -23,42 +22,57 @@ public class BulletManager {
     private final Queue<Bullet> enemyBulletPool = new ArrayDeque<>();
 
     public void update(float delta) {
+        update(delta, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
+    }
+
+    public void update(float delta, float screenWidth, float screenHeight) {
+
         Iterator<Bullet> pIter = activePlayerBullets.iterator();
 
         while (pIter.hasNext()) {
-            Bullet b = pIter.next();
-            b.update(delta);
+            Bullet bullet = pIter.next();
+            bullet.update(delta);
 
-            if (b.isDestroyed()) {
+            if (bullet.isOffScreen(screenWidth, screenHeight)) {
+                bullet.destroy();
+            }
+
+            if (bullet.isDestroyed()) {
                 pIter.remove();
-                playerBulletPool.offer(b);
+                playerBulletPool.offer(bullet);
             }
         }
 
         Iterator<Bullet> eIter = activeEnemyBullets.iterator();
 
         while (eIter.hasNext()) {
-            Bullet b = eIter.next();
-            b.update(delta);
+            Bullet bullet = eIter.next();
+            bullet.update(delta);
 
-            if (b.isDestroyed()) {
+            if (bullet.isOffScreen(screenWidth, screenHeight)) {
+                bullet.destroy();
+            }
+
+            if (bullet.isDestroyed()) {
                 eIter.remove();
-                enemyBulletPool.offer(b);
+                enemyBulletPool.offer(bullet);
             }
         }
     }
 
     public void render(SpriteBatch batch) {
-        for (Bullet b : activePlayerBullets) {
-            b.render(batch);
+        for (Bullet bullet : activePlayerBullets) {
+            bullet.render(batch);
         }
 
-        for (Bullet b : activeEnemyBullets) {
-            b.render(batch);
+        for (Bullet bullet : activeEnemyBullets) {
+            bullet.render(batch);
         }
     }
 
-    public void spawnPlayerBullet(float x, float y, float vx, float vy, int damage) {
+    public void spawnPlayerBullet(
+        float x, float y, float vx, float vy, int damage
+    ) {
         Bullet bullet = playerBulletPool.poll();
 
         if (bullet == null) {
@@ -75,7 +89,9 @@ public class BulletManager {
         activePlayerBullets.add(bullet);
     }
 
-    public void spawnEnemyBullet(float x, float y, float vx, float vy, int damage) {
+    public void spawnEnemyBullet(
+        float x, float y, float vx, float vy, int damage
+    ) {
         Bullet bullet = enemyBulletPool.poll();
 
         if (bullet == null) {
@@ -93,10 +109,10 @@ public class BulletManager {
     }
 
     public void clearEnemyBullets(List<GameObject> entities) {
-        Iterator<Bullet> iter = activeEnemyBullets.iterator();
+        Iterator<Bullet> iterator = activeEnemyBullets.iterator();
 
-        while (iter.hasNext()) {
-            Bullet bullet = iter.next();
+        while (iterator.hasNext()) {
+            Bullet bullet = iterator.next();
 
             if (entities != null) {
                 Item pointItem = EntityFactory.createItem(
@@ -109,7 +125,7 @@ public class BulletManager {
             }
 
             bullet.destroy();
-            iter.remove();
+            iterator.remove();
             enemyBulletPool.offer(bullet);
         }
     }
@@ -119,13 +135,13 @@ public class BulletManager {
     }
 
     public void clearPlayerBullets() {
-        Iterator<Bullet> pIter = activePlayerBullets.iterator();
+        Iterator<Bullet> iterator = activePlayerBullets.iterator();
 
-        while (pIter.hasNext()) {
-            Bullet bullet = pIter.next();
+        while (iterator.hasNext()) {
+            Bullet bullet = iterator.next();
 
             bullet.destroy();
-            pIter.remove();
+            iterator.remove();
             playerBulletPool.offer(bullet);
         }
     }
