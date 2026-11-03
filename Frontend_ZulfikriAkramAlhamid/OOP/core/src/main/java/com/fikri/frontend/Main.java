@@ -57,7 +57,9 @@ public class Main extends ApplicationAdapter {
         gameHUD = new GameHUD();
 
         AssetManager.getInstance().init();
+
         AudioManager.getInstance().init();
+        AudioManager.getInstance().playBgm();
 
         player = EntityFactory.createPlayer(
             200, 50, "Reimu Hakurei", 100, 15, 3

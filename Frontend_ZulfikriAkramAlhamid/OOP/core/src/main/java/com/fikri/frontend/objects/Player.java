@@ -12,6 +12,7 @@ import com.fikri.frontend.objects.enemies.Enemy;
 import com.fikri.frontend.objects.patterns.ShootingPattern;
 import com.fikri.frontend.objects.Systems.BulletManager;
 import com.fikri.frontend.observers.GameObserver;
+import com.fikri.frontend.objects.Systems.AudioManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,14 +110,6 @@ public class Player extends GameObject {
 
 
 
-
-
-
-
-
-
-
-
     @Override
     public void update(float delta) {
         super.update(delta);
@@ -186,7 +179,7 @@ public class Player extends GameObject {
                     10 + power
                 );
             }
-
+            AudioManager.getInstance().playShootSfx();
             shootTimer = 0f;
         }
     }

@@ -1,3 +1,4 @@
+
 package com.fikri.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
@@ -6,6 +7,7 @@ import com.fikri.frontend.objects.BulletType;
 import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.enemies.Enemy;
+import com.fikri.frontend.objects.Systems.AssetManager;
 
 public class Bullet extends GameObject {
     private BulletType bulletType;
@@ -18,6 +20,10 @@ public class Bullet extends GameObject {
 
     public Bullet(float x, float y, BulletType bulletType, int damage) {
         super(x, y, 16, 16, 400f, Color.YELLOW);
+
+        this.sprite = AssetManager.getInstance()
+            .getTextureRegion("bullet_amulet");
+
         this.bulletType = bulletType;
         this.damage = damage;
         this.vx = 0f;
@@ -29,6 +35,10 @@ public class Bullet extends GameObject {
 
     public Bullet(float x, float y, float speed, BulletType bulletType, int damage) {
         super(x, y, 16, 16, speed, Color.YELLOW);
+
+        this.sprite = AssetManager.getInstance()
+            .getTextureRegion("bullet_amulet");
+
         this.bulletType = bulletType;
         this.damage = damage;
         this.vx = 0f;
@@ -38,16 +48,25 @@ public class Bullet extends GameObject {
         this.grazed = false;
     }
 
-    public void init(float x, float y, float vx, float vy, BulletType bulletType, int damage, boolean isPlayerBullet) {
+    public void init(float x, float y, float vx, float vy,
+                     BulletType bulletType, int damage,
+                     boolean isPlayerBullet) {
+
         setX(x);
         setY(y);
+
         this.vx = vx;
         this.vy = vy;
         this.angle = (float) Math.toDegrees(Math.atan2(vy, vx));
         this.speed = (float) Math.hypot(vx, vy);
+
         this.bulletType = bulletType;
         this.damage = damage;
         this.isPlayerBullet = isPlayerBullet;
+
+        this.sprite = AssetManager.getInstance()
+            .getTextureRegion("bullet_amulet");
+
         this.active = true;
         this.stateTime = 0f;
         this.grazed = false;
@@ -62,12 +81,19 @@ public class Bullet extends GameObject {
 
     @Override
     public void render(SpriteBatch batch) {
-        if (batch != null && active) {
-            if (sprite != null) {
-                batch.draw(sprite, x, y, width / 2f, height / 2f, width, height, 1f, 1f, angle - 90f);
-            } else {
-                super.render(batch);
-            }
+        if (batch == null || !active) return;
+
+        if (sprite != null) {
+            batch.draw(
+                sprite,
+                x, y,
+                width / 2f, height / 2f,
+                width, height,
+                1f, 1f,
+                angle - 90f
+            );
+        } else {
+            super.render(batch);
         }
     }
 
