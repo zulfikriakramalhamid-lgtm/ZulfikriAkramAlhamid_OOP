@@ -58,11 +58,15 @@ public class EntityFactory {
         return item;
     }
 
-    public static Bullet createEnemyBullet(float x, float y, int damage) {
+    public static Bullet createEnemyBullet(float x, float y, int damage, String spriteKey) { // Tambahin String spriteKey sebagai parameter
+        String key = (spriteKey != null) ? spriteKey : "bullet_danmaku"; // Tambahkan variabel String lokal key
+        TextureRegion sprite = AssetManager.getInstance().getTextureRegion(key); // Ganti "bullet_danmaku" menjadi key tadi
         Bullet bullet = new Bullet(x, y, 0f, BulletType.DANMAKU, damage);
-        TextureRegion sprite = AssetManager.getInstance().getTextureRegion("bullet_danmaku");
         bullet.setSprite(sprite);
         return bullet;
+    }
+    public static Bullet createEnemyBullet(float x, float y, int damage) {
+        return createEnemyBullet(x, y, damage, "bullet_danmaku");
     }
 
     // Part III — Soal 3 Langkah 3: Factory Player Bullet Custom Sprite

@@ -1,4 +1,3 @@
-
 package com.fikri.frontend;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -20,6 +19,7 @@ import com.fikri.frontend.objects.Systems.AudioManager;
 import com.fikri.frontend.objects.Systems.BulletManager;
 import com.fikri.frontend.objects.Systems.CollisionReferee;
 import com.fikri.frontend.objects.Systems.EntityFactory;
+import com.fikri.frontend.objects.patterns.shootingStrategy.AlternatingRingShot;
 import com.fikri.frontend.ui.GameHUD;
 
 import java.util.ArrayList;
@@ -57,35 +57,19 @@ public class Main extends ApplicationAdapter {
         gameHUD = new GameHUD();
 
         AssetManager.getInstance().init();
-
         AudioManager.getInstance().init();
         AudioManager.getInstance().playBgm();
 
-        player = EntityFactory.createPlayer(
-            200, 50, "Reimu Hakurei", 100, 15, 3
-        );
-
+        player = EntityFactory.createPlayer(200, 50, "Reimu Hakurei", 100, 15, 3);
         player.registerObserver(gameHUD);
 
-        fairy.add(
-            EntityFactory.createFairy(150, 380, "Red Fairy", 20)
-        );
-
-        fairy.add(
-            EntityFactory.createFairy(
-                250, 380, "Blue Fairy", 20, "fairy_idle_blue"
-            )
-        );
+        fairy.add(EntityFactory.createFairy(150, 380, "Red Fairy", 20));
+        fairy.add(EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue"));
 
         boss = EntityFactory.createBoss(250, 400, "Rumia", 150);
 
-        powerItem = EntityFactory.createItem(
-            180, 450, ItemType.POWER
-        );
-
-        pointItem = EntityFactory.createItem(
-            220, 480, ItemType.POINT
-        );
+        powerItem = EntityFactory.createItem(180, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(220, 480, ItemType.POINT);
 
         entities.add(player);
         entities.addAll(fairy);
@@ -94,143 +78,91 @@ public class Main extends ApplicationAdapter {
         entities.add(pointItem);
 
         inputHandler.setEntities(entities);
+        bulletManager.setEntities(entities);
     }
 
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
 
-        // 0. Restart Game
-        if (
-            Gdx.input != null &&
-                Gdx.input.isKeyJustPressed(Input.Keys.R) &&
-                player != null &&
-                player.isGameOver()
-        ) {
+        if (Gdx.input != null && Gdx.input.isKeyJustPressed(Input.Keys.R) && player != null && player.isGameOver()) {
             restartGame();
         }
 
-        // 1. Command Pattern
         List<Command> commands = inputHandler.handleInput(delta);
-
         for (Command command : commands) {
             command.execute(player, bulletManager);
         }
 
-        // 2. Boss Shooting Scheduler
         updateEnemyScheduler(delta);
 
-        // 3. Update Entities
-        updateAndClean(entities, delta, 416, 560);
+        // TODO (Part IV): Boss Phase Swapping berdasarkan sisa HP
+        if (boss != null && !boss.isDestroyed()) {
+            if (boss.getHp() < 75 && !(boss.getShootingPattern() instanceof AlternatingRingShot)) {
+                boss.setShootingPattern(new AlternatingRingShot(180f, 8, 15, 3, 30f));
+            }
+        }
 
-        // 4. Update Bullets
+        updateAndClean(entities, delta, 416, 560);
         bulletManager.update(delta, 416, 560);
 
-        // 5. Collision Detection
-        collisionReferee.resolveCollisions(
-            player,
-            entities,
-            bulletManager
-        );
+        collisionReferee.resolveCollisions(player, entities, bulletManager);
 
-        // 6. Clear Screen
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.15f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // 7. Render Background
         gameHUD.renderBackground();
 
-        // 8. Render Game Objects and HUD
         batch.begin();
-
         for (GameObject entity : entities) {
             if (!entity.isDestroyed()) {
                 entity.render(batch);
             }
         }
-
         bulletManager.render(batch);
         gameHUD.render(batch);
-
         batch.end();
 
-        // 9. Focus Indicator
-        player.renderFocusIndicator(
-            gameHUD.getShapeRenderer()
-        );
+        player.renderFocusIndicator(gameHUD.getShapeRenderer());
     }
 
     private void updateEnemyScheduler(float delta) {
         enemyShootTimer += delta;
-
         if (enemyShootTimer >= 1f) {
             if (boss != null && !boss.isDestroyed()) {
                 boss.shootBullet(bulletManager);
             }
-
             enemyShootTimer = 0f;
         }
     }
 
-    private void updateAndClean(
-        List<GameObject> objects,
-        float delta,
-        float width,
-        float height
-    ) {
+    private void updateAndClean(List<GameObject> objects, float delta, float width, float height) {
         Iterator<GameObject> iterator = objects.iterator();
-
         while (iterator.hasNext()) {
             GameObject entity = iterator.next();
-
             entity.update(delta);
-
-            if (
-                entity != player &&
-                    (
-                        entity.isDestroyed() ||
-                            entity.isOffScreen(width, height)
-                    )
-            ) {
+            if (entity != player && (entity.isDestroyed() || entity.isOffScreen(width, height))) {
                 iterator.remove();
             }
         }
     }
 
     private void restartGame() {
-        System.out.println("[Main] Restarting game...");
-
         entities.clear();
-
         bulletManager.clearEnemyBullets();
         bulletManager.clearPlayerBullets();
-
         enemyShootTimer = 0f;
 
         player.resetGame();
         entities.add(player);
 
         fairy.clear();
-
-        fairy.add(
-            EntityFactory.createFairy(150, 380, "Red Fairy", 20)
-        );
-
-        fairy.add(
-            EntityFactory.createFairy(
-                250, 380, "Blue Fairy", 20, "fairy_idle_blue"
-            )
-        );
+        fairy.add(EntityFactory.createFairy(150, 380, "Red Fairy", 20));
+        fairy.add(EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue"));
 
         boss = EntityFactory.createBoss(250, 400, "Rumia", 150);
-
-        powerItem = EntityFactory.createItem(
-            180, 450, ItemType.POWER
-        );
-
-        pointItem = EntityFactory.createItem(
-            220, 480, ItemType.POINT
-        );
+        powerItem = EntityFactory.createItem(180, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(220, 480, ItemType.POINT);
 
         entities.addAll(fairy);
         entities.add(boss);
@@ -238,18 +170,13 @@ public class Main extends ApplicationAdapter {
         entities.add(pointItem);
 
         inputHandler.setEntities(entities);
+        bulletManager.setEntities(entities);
     }
 
     @Override
     public void dispose() {
-        if (batch != null) {
-            batch.dispose();
-        }
-
-        if (gameHUD != null) {
-            gameHUD.dispose();
-        }
-
+        if (batch != null) batch.dispose();
+        if (gameHUD != null) gameHUD.dispose();
         AssetManager.getInstance().dispose();
         AudioManager.getInstance().dispose();
     }

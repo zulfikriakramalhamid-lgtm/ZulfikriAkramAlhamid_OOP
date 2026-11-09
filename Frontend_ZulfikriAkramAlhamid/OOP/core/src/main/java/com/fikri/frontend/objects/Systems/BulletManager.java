@@ -6,6 +6,7 @@ import com.fikri.frontend.objects.BulletType;
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.items.Item;
 import com.fikri.frontend.objects.items.ItemType;
+import com.fikri.frontend.objects.patterns.bulletStrategy.HomingBulletMovement;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ public class BulletManager {
     private final Queue<Bullet> playerBulletPool = new ArrayDeque<>();
     private final Queue<Bullet> enemyBulletPool = new ArrayDeque<>();
 
+    // [TAMBAHAN CS] Field untuk menampung daftar entitas arena (dibutuhkan peluru Homing)
+    private List<GameObject> entities;
+
     public void update(float delta) {
         update(delta, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
     }
@@ -31,6 +35,12 @@ public class BulletManager {
 
         while (pIter.hasNext()) {
             Bullet bullet = pIter.next();
+
+            // [TAMBAHAN CS] Sisipkan pengecekan homing entities sebelum update
+            if (entities != null && bullet.getMovementPattern() instanceof HomingBulletMovement homing && homing.getEntities() == null) {
+                homing.setEntities(entities);
+            }
+
             bullet.update(delta);
 
             if (bullet.isOffScreen(screenWidth, screenHeight)) {
@@ -70,58 +80,60 @@ public class BulletManager {
         }
     }
 
-    public void spawnPlayerBullet(
-        float x, float y, float vx, float vy, int damage
-    ) {
-        Bullet bullet = playerBulletPool.poll();
-
-        if (bullet == null) {
-            bullet = new Bullet(x, y, BulletType.PLAYER_BULLET, damage);
+    // [UBAH CS] Overload 6 parameter untuk player bullet dengan spriteKey
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage, String spriteKey) {
+        String key = (spriteKey != null) ? spriteKey : "bullet_amulet";
+        Bullet bullet;
+        if (!playerBulletPool.isEmpty()) {
+            bullet = playerBulletPool.poll();
+            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
+            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key));
+        } else {
+            bullet = EntityFactory.createPlayerBullet(x, y, damage, key);
+            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
         }
-
-        bullet.init(
-            x, y, vx, vy,
-            BulletType.PLAYER_BULLET,
-            damage,
-            true
-        );
-
         activePlayerBullets.add(bullet);
+        return bullet;
     }
 
-    public void spawnEnemyBullet(
-        float x, float y, float vx, float vy, int damage
-    ) {
-        Bullet bullet = enemyBulletPool.poll();
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage) {
+        return spawnPlayerBullet(x, y, vx, vy, damage, "bullet_amulet");
+    }
 
-        if (bullet == null) {
-            bullet = new Bullet(x, y, BulletType.ENEMY_BULLET, damage);
+    // [UBAH CS] Overload 6 parameter untuk enemy bullet dengan spriteKey
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage, String spriteKey) {
+        String key = (spriteKey != null) ? spriteKey : "bullet_danmaku";
+        Bullet bullet;
+        if (!enemyBulletPool.isEmpty()) {
+            bullet = enemyBulletPool.poll();
+            bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
+            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key));
+        } else {
+            bullet = EntityFactory.createEnemyBullet(x, y, damage, key);
+            bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
         }
-
-        bullet.init(
-            x, y, vx, vy,
-            BulletType.ENEMY_BULLET,
-            damage,
-            false
-        );
-
         activeEnemyBullets.add(bullet);
+        return bullet;
     }
 
-    public void clearEnemyBullets(List<GameObject> entities) {
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage) {
+        return spawnEnemyBullet(x, y, vx, vy, damage, "bullet_danmaku");
+    }
+
+    public void clearEnemyBullets(List<GameObject> entitiesList) {
         Iterator<Bullet> iterator = activeEnemyBullets.iterator();
 
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
 
-            if (entities != null) {
+            if (entitiesList != null) {
                 Item pointItem = EntityFactory.createItem(
                     bullet.getX(),
                     bullet.getY(),
                     ItemType.POINT
                 );
 
-                entities.add(pointItem);
+                entitiesList.add(pointItem);
             }
 
             bullet.destroy();
@@ -152,5 +164,14 @@ public class BulletManager {
 
     public List<Bullet> getActiveEnemyBullets() {
         return activeEnemyBullets;
+    }
+
+    // [TAMBAHAN CS] Getter & Setter untuk entities arena
+    public List<GameObject> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(List<GameObject> entities) {
+        this.entities = entities;
     }
 }
