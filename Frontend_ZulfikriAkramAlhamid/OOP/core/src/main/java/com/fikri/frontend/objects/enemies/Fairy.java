@@ -3,8 +3,8 @@ package com.fikri.frontend.objects.enemies;
 import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.Player;
-import com.fikri.frontend.objects.patterns.shootingStrategy.FrontShot;
 import com.fikri.frontend.objects.patterns.entityStrategy.LinearEntityMovement;
+import com.fikri.frontend.objects.patterns.shootingStrategy.FrontShot;
 
 public class Fairy extends Enemy {
     private float shootTimer = 0f;
@@ -14,60 +14,59 @@ public class Fairy extends Enemy {
     private int shotsFired = 0;
 
     public Fairy(String name, int hp) {
-        super(150, 380, 24, 24, Color.PINK, name, hp, 500L);
-        // TODO (1 poin): Suntikkan strategi bawaan FrontShot(150f, 10) dan LinearEntityMovement(0f, -40f)t
-        setShootingPattern(new FrontShot(150f, 10));
-        setMovementPattern(new LinearEntityMovement(0f, -40f));
+        super(150f, 380f, 24f, 24f, 100f, Color.PINK, name, hp, 500L);
+        injectDefaultStrategies();
+    }
+
+    public Fairy(float x, float y) {
+        super(x, y, 24f, 24f, 100f, Color.PINK, "Fairy", 20, 500L);
+        injectDefaultStrategies();
     }
 
     public Fairy(float x, float y, String name, int hp) {
-        super(x, y, 24, 24, Color.PINK, name, hp, 500L);
-        setShootingPattern(new FrontShot(150f, 10));
-        setMovementPattern(new LinearEntityMovement(0f, -40f));
+        super(x, y, 24f, 24f, 100f, Color.PINK, name, hp, 500L);
+        injectDefaultStrategies();
     }
 
-    public Fairy(float x, float y, String name, int hp, float shootDelay, float shootInterval, int maxShots) {
-        super(x, y, 24, 24, Color.PINK, name, hp, 500L);
+    public Fairy(float x, float y, String name, int hp,
+                 float shootDelay, float shootInterval, int maxShots) {
+        super(x, y, 24f, 24f, 100f, Color.PINK, name, hp, 500L);
         this.shootDelay = shootDelay;
         this.shootInterval = shootInterval;
-        this.maxShots = maxShots;
-        // TODO (2 poin): Suntikkan strategi bawaan FrontShot dan LinearEntityMovement
+        this.maxShots = Math.max(0, maxShots);
+        injectDefaultStrategies();
+    }
+
+    private void injectDefaultStrategies() {
         setShootingPattern(new FrontShot(150f, 10));
         setMovementPattern(new LinearEntityMovement(0f, -40f));
     }
 
     public boolean canShoot(float delta) {
+        if (shotsFired >= maxShots || isDestroyed()) return false;
+
         shootTimer += delta;
-        if (shotsFired == 0) {
-            if (shootTimer >= shootDelay) {
-                shotsFired++;
-                shootTimer = 0f;
-                return true;
-            }
-        } else if (shotsFired < maxShots) {
-            if (shootTimer >= shootInterval) {
-                shotsFired++;
-                shootTimer = 0f;
-                return true;
-            }
+        float requiredDelay = shotsFired == 0 ? shootDelay : shootInterval;
+
+        if (shootTimer >= requiredDelay) {
+            shotsFired++;
+            shootTimer = 0f;
+            return true;
         }
         return false;
     }
 
     public void setShootTiming(float shootDelay, float shootInterval, int maxShots) {
-        this.shootDelay = shootDelay;
-        this.shootInterval = shootInterval;
-        this.maxShots = maxShots;
+        this.shootDelay = Math.max(0f, shootDelay);
+        this.shootInterval = Math.max(0f, shootInterval);
+        this.maxShots = Math.max(0, maxShots);
     }
 
     @Override
     public void onCollision(Collidable other) {
-        if (other instanceof Player player) {
-            if (canCollide()) {
-                System.out.println("Player collided with Fairy!");
-                player.takeDamage(10);
-                resetCollisionCooldown();
-            }
+        if (other instanceof Player player && canCollide()) {
+            player.takeDamage(10);
+            resetCollisionCooldown();
         }
     }
 

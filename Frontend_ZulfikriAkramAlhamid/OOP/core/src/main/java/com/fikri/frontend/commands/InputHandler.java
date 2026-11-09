@@ -77,7 +77,7 @@ public class InputHandler {
             if(Gdx.input.isKeyPressed(keyShoot)){
                 activeCommands.add(shootCommand);
             }
-            if(Gdx.input.isKeyPressed(keyBomb)){
+            if(Gdx.input.isKeyJustPressed(keyBomb)){
                 activeCommands.add(bombCommand);
             }
         return activeCommands;

@@ -34,6 +34,10 @@ public abstract class GameObject implements Collidable {
         this.stateTime += delta; // Tambah waktu internal objek agar animasi bergerak
     }
 
+    public boolean isActive() {
+        return this.active;
+    }
+
     public boolean isDestroyed() {
         return !this.active;
     }

@@ -5,16 +5,21 @@ import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.enemies.Enemy;
 
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class FantasySealMovement implements BulletMovementPattern {
     private GameObject target;
     private List<GameObject> entities;
     private float homingSpeed;
     private float turnSpeed;
-    private float driftDuration; // Phase 1 drift time before homing (default 0.4 seconds)
-    private float timer = 0f;
+    private float driftDuration;
 
-    public FantasySealMovement(GameObject target, List<GameObject> entities, float homingSpeed, float turnSpeed, float driftDuration) {
+    // Satu strategi dipakai bersama oleh delapan orb. Timer harus dipisah per peluru.
+    private final Map<Bullet, Float> timers = new WeakHashMap<>();
+
+    public FantasySealMovement(GameObject target, List<GameObject> entities,
+                               float homingSpeed, float turnSpeed, float driftDuration) {
         this.target = target;
         this.entities = entities;
         this.homingSpeed = homingSpeed;
@@ -33,66 +38,66 @@ public class FantasySealMovement implements BulletMovementPattern {
     @Override
     public void move(Bullet bullet, float delta) {
         if (bullet == null) return;
-        timer += delta;
+
+        float timer = timers.getOrDefault(bullet, 0f) + delta;
+        timers.put(bullet, timer);
 
         if (timer < driftDuration) {
-            // Phase 1 (TH06 Radial Drift): Bullet moves along its initial radial velocity vector (vx, vy)
             bullet.setX(bullet.getX() + bullet.getVx() * delta);
             bullet.setY(bullet.getY() + bullet.getVy() * delta);
-        } else {
-            // Dynamic Retargeting: If target is null or destroyed, find nearest active enemy from entities list!
-            if (target == null || target.isDestroyed()) {
-                if (entities != null) {
-                    GameObject nearest = null;
-                    float minDistanceSq = Float.MAX_VALUE;
-                    for (GameObject obj : entities) {
-                        if (obj instanceof Enemy enemy && !enemy.isDestroyed()) {
-                            float dx = enemy.getX() - bullet.getX();
-                            float dy = enemy.getY() - bullet.getY();
-                            float distSq = dx * dx + dy * dy;
-                            if (distSq < minDistanceSq) {
-                                minDistanceSq = distSq;
-                                nearest = enemy;
-                            }
-                        }
-                    }
-                    target = nearest;
+            return;
+        }
+
+        if (target == null || target.isDestroyed()) {
+            target = findNearestEnemy(bullet);
+        }
+
+        if (target != null && !target.isDestroyed()) {
+            float targetAngle = (float) Math.toDegrees(Math.atan2(
+                    target.getY() + target.getHeight() / 2f - bullet.getY(),
+                    target.getX() + target.getWidth() / 2f - bullet.getX()));
+
+            float difference = (targetAngle - bullet.getAngle()) % 360f;
+            if (difference > 180f) difference -= 360f;
+            if (difference < -180f) difference += 360f;
+
+            float turn = Math.signum(difference)
+                    * Math.min(Math.abs(difference), turnSpeed * delta);
+            bullet.setAngle(bullet.getAngle() + turn);
+        }
+
+        float radians = (float) Math.toRadians(bullet.getAngle());
+        bullet.setX(bullet.getX() + (float) Math.cos(radians) * homingSpeed * delta);
+        bullet.setY(bullet.getY() + (float) Math.sin(radians) * homingSpeed * delta);
+    }
+
+    private GameObject findNearestEnemy(Bullet bullet) {
+        if (entities == null) return null;
+
+        GameObject nearest = null;
+        float minDistanceSquared = Float.MAX_VALUE;
+        for (GameObject entity : entities) {
+            if (entity instanceof Enemy && !entity.isDestroyed()) {
+                float dx = entity.getX() + entity.getWidth() / 2f - bullet.getX();
+                float dy = entity.getY() + entity.getHeight() / 2f - bullet.getY();
+                float distanceSquared = dx * dx + dy * dy;
+                if (distanceSquared < minDistanceSquared) {
+                    minDistanceSquared = distanceSquared;
+                    nearest = entity;
                 }
             }
-
-            // Phase 2 (TH06 Homing Lock): Bullet steers towards target and accelerates
-            if (target != null && !target.isDestroyed()) {
-                float targetAngle = (float) Math.toDegrees(Math.atan2(
-                    target.getY() - bullet.getY(),
-                    target.getX() - bullet.getX()
-                ));
-                float diff = (targetAngle - bullet.getAngle()) % 360f;
-                if (diff > 180f) diff -= 360f;
-                if (diff < -180f) diff += 360f;
-
-                bullet.setAngle(bullet.getAngle() + Math.signum(diff) * Math.min(Math.abs(diff), turnSpeed * delta));
-            }
-
-            float rad = (float) Math.toRadians(bullet.getAngle());
-            float dx = (float) Math.cos(rad) * homingSpeed * delta;
-            float dy = (float) Math.sin(rad) * homingSpeed * delta;
-            bullet.setX(bullet.getX() + dx);
-            bullet.setY(bullet.getY() + dy);
         }
+        return nearest;
     }
 
     public GameObject getTarget() { return target; }
     public void setTarget(GameObject target) { this.target = target; }
-
     public List<GameObject> getEntities() { return entities; }
     public void setEntities(List<GameObject> entities) { this.entities = entities; }
-
     public float getHomingSpeed() { return homingSpeed; }
-    public void setHomingSpeed(float homingSpeed) { this.homingSpeed = homingSpeed; }
-
+    public void setHomingSpeed(float speed) { this.homingSpeed = speed; }
     public float getTurnSpeed() { return turnSpeed; }
-    public void setTurnSpeed(float turnSpeed) { this.turnSpeed = turnSpeed; }
-
+    public void setTurnSpeed(float speed) { this.turnSpeed = speed; }
     public float getDriftDuration() { return driftDuration; }
-    public void setDriftDuration(float driftDuration) { this.driftDuration = driftDuration; }
+    public void setDriftDuration(float duration) { this.driftDuration = duration; }
 }

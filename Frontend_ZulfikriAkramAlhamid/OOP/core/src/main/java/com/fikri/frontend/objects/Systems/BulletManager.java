@@ -1,12 +1,14 @@
 package com.fikri.frontend.objects.Systems;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.BulletType;
 import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.bullets.Bullet;
 import com.fikri.frontend.objects.items.Item;
 import com.fikri.frontend.objects.items.ItemType;
+import com.fikri.frontend.objects.patterns.bulletStrategy.FantasySealMovement;
 import com.fikri.frontend.objects.patterns.bulletStrategy.HomingBulletMovement;
+import com.fikri.frontend.objects.patterns.shootingStrategy.RingShot;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -15,14 +17,10 @@ import java.util.List;
 import java.util.Queue;
 
 public class BulletManager {
-
     private final List<Bullet> activePlayerBullets = new ArrayList<>();
     private final List<Bullet> activeEnemyBullets = new ArrayList<>();
-
     private final Queue<Bullet> playerBulletPool = new ArrayDeque<>();
     private final Queue<Bullet> enemyBulletPool = new ArrayDeque<>();
-
-    // [TAMBAHAN CS] Field untuk menampung daftar entitas arena (dibutuhkan peluru Homing)
     private List<GameObject> entities;
 
     public void update(float delta) {
@@ -30,68 +28,62 @@ public class BulletManager {
     }
 
     public void update(float delta, float screenWidth, float screenHeight) {
-
-        Iterator<Bullet> pIter = activePlayerBullets.iterator();
-
-        while (pIter.hasNext()) {
-            Bullet bullet = pIter.next();
-
-            // [TAMBAHAN CS] Sisipkan pengecekan homing entities sebelum update
-            if (entities != null && bullet.getMovementPattern() instanceof HomingBulletMovement homing && homing.getEntities() == null) {
-                homing.setEntities(entities);
-            }
-
+        Iterator<Bullet> playerIterator = activePlayerBullets.iterator();
+        while (playerIterator.hasNext()) {
+            Bullet bullet = playerIterator.next();
+            injectEntities(bullet);
             bullet.update(delta);
 
-            if (bullet.isOffScreen(screenWidth, screenHeight)) {
-                bullet.destroy();
-            }
-
+            if (bullet.isOffScreen(screenWidth, screenHeight)) bullet.destroy();
             if (bullet.isDestroyed()) {
-                pIter.remove();
+                playerIterator.remove();
                 playerBulletPool.offer(bullet);
             }
         }
 
-        Iterator<Bullet> eIter = activeEnemyBullets.iterator();
-
-        while (eIter.hasNext()) {
-            Bullet bullet = eIter.next();
+        Iterator<Bullet> enemyIterator = activeEnemyBullets.iterator();
+        while (enemyIterator.hasNext()) {
+            Bullet bullet = enemyIterator.next();
+            injectEntities(bullet);
             bullet.update(delta);
 
-            if (bullet.isOffScreen(screenWidth, screenHeight)) {
-                bullet.destroy();
-            }
-
+            if (bullet.isOffScreen(screenWidth, screenHeight)) bullet.destroy();
             if (bullet.isDestroyed()) {
-                eIter.remove();
+                enemyIterator.remove();
                 enemyBulletPool.offer(bullet);
             }
         }
     }
 
-    public void render(SpriteBatch batch) {
-        for (Bullet bullet : activePlayerBullets) {
-            bullet.render(batch);
-        }
+    private void injectEntities(Bullet bullet) {
+        if (bullet == null || entities == null || bullet.getMovementPattern() == null) return;
 
-        for (Bullet bullet : activeEnemyBullets) {
-            bullet.render(batch);
+        if (bullet.getMovementPattern() instanceof HomingBulletMovement homing
+                && homing.getEntities() == null) {
+            homing.setEntities(entities);
+        } else if (bullet.getMovementPattern() instanceof FantasySealMovement fantasy
+                && fantasy.getEntities() == null) {
+            fantasy.setEntities(entities);
         }
     }
 
-    // [UBAH CS] Overload 6 parameter untuk player bullet dengan spriteKey
-    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage, String spriteKey) {
-        String key = (spriteKey != null) ? spriteKey : "bullet_amulet";
+    public void render(SpriteBatch batch) {
+        for (Bullet bullet : activePlayerBullets) bullet.render(batch);
+        for (Bullet bullet : activeEnemyBullets) bullet.render(batch);
+    }
+
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy,
+                                    int damage, String spriteKey) {
+        String key = spriteKey != null ? spriteKey : "bullet_amulet";
         Bullet bullet;
         if (!playerBulletPool.isEmpty()) {
             bullet = playerBulletPool.poll();
-            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
-            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key));
         } else {
             bullet = EntityFactory.createPlayerBullet(x, y, damage, key);
-            bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
         }
+
+        bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
+        bullet.setSprite(AssetManager.getInstance().getTextureRegion(key));
         activePlayerBullets.add(bullet);
         return bullet;
     }
@@ -100,18 +92,18 @@ public class BulletManager {
         return spawnPlayerBullet(x, y, vx, vy, damage, "bullet_amulet");
     }
 
-    // [UBAH CS] Overload 6 parameter untuk enemy bullet dengan spriteKey
-    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage, String spriteKey) {
-        String key = (spriteKey != null) ? spriteKey : "bullet_danmaku";
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy,
+                                   int damage, String spriteKey) {
+        String key = spriteKey != null ? spriteKey : "bullet_danmaku";
         Bullet bullet;
         if (!enemyBulletPool.isEmpty()) {
             bullet = enemyBulletPool.poll();
-            bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
-            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key));
         } else {
             bullet = EntityFactory.createEnemyBullet(x, y, damage, key);
-            bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
         }
+
+        bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
+        bullet.setSprite(AssetManager.getInstance().getTextureRegion(key));
         activeEnemyBullets.add(bullet);
         return bullet;
     }
@@ -120,19 +112,35 @@ public class BulletManager {
         return spawnEnemyBullet(x, y, vx, vy, damage, "bullet_danmaku");
     }
 
+    public void spawnBombOrbs(float originX, float originY,
+                              GameObject targetEnemy, List<GameObject> entities) {
+        int orbCount = 8;
+        int orbDamage = 35;
+        List<GameObject> targetEntities = entities != null ? entities : this.entities;
+
+        RingShot ringShot = new RingShot(
+                150f,
+                orbCount,
+                orbDamage,
+                new FantasySealMovement(targetEnemy, targetEntities)
+        );
+        ringShot.execute(originX, originY, this, true);
+
+        System.out.println("[BulletManager] Spawned 8 Bomb Spirit Orbs via RingShot + FantasySealMovement!");
+    }
+
+    public void spawnBombOrbs(float originX, float originY, GameObject targetEnemy) {
+        spawnBombOrbs(originX, originY, targetEnemy, null);
+    }
+
     public void clearEnemyBullets(List<GameObject> entitiesList) {
         Iterator<Bullet> iterator = activeEnemyBullets.iterator();
-
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
 
             if (entitiesList != null) {
                 Item pointItem = EntityFactory.createItem(
-                    bullet.getX(),
-                    bullet.getY(),
-                    ItemType.POINT
-                );
-
+                        bullet.getX(), bullet.getY(), ItemType.POINT);
                 entitiesList.add(pointItem);
             }
 
@@ -148,30 +156,16 @@ public class BulletManager {
 
     public void clearPlayerBullets() {
         Iterator<Bullet> iterator = activePlayerBullets.iterator();
-
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
-
             bullet.destroy();
             iterator.remove();
             playerBulletPool.offer(bullet);
         }
     }
 
-    public List<Bullet> getActivePlayerBullets() {
-        return activePlayerBullets;
-    }
-
-    public List<Bullet> getActiveEnemyBullets() {
-        return activeEnemyBullets;
-    }
-
-    // [TAMBAHAN CS] Getter & Setter untuk entities arena
-    public List<GameObject> getEntities() {
-        return entities;
-    }
-
-    public void setEntities(List<GameObject> entities) {
-        this.entities = entities;
-    }
+    public List<Bullet> getActivePlayerBullets() { return activePlayerBullets; }
+    public List<Bullet> getActiveEnemyBullets() { return activeEnemyBullets; }
+    public List<GameObject> getEntities() { return entities; }
+    public void setEntities(List<GameObject> entities) { this.entities = entities; }
 }
