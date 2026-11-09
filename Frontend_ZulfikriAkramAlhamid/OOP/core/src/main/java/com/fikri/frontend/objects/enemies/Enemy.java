@@ -2,11 +2,13 @@ package com.fikri.frontend.objects.enemies;
 
 import com.badlogic.gdx.graphics.Color;
 import com.fikri.frontend.objects.Collidable;
-import com.fikri.frontend.objects.GameObject;
+import com.fikri.frontend.objects.EntityShooter;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.Systems.AudioManager;
+import com.fikri.frontend.objects.patterns.ShootingPattern;
+import com.fikri.frontend.objects.patterns.entityStrategy.EntityMovementPattern;
 
-public class Enemy extends GameObject {
+public class Enemy extends EntityShooter {
     private String name;
     private int hp;
     private int maxHp;
@@ -37,6 +39,15 @@ public class Enemy extends GameObject {
         this.scoreValue = scoreValue;
     }
 
+    // Konstruktor Constructor Injection untuk Modul 9 (Strategy & DI)
+    public Enemy(float x, float y, float width, float height, Color color, String name, int hp, long scoreValue, ShootingPattern shootingPattern, EntityMovementPattern movementPattern) {
+        super(x, y, width, height, 0, color, shootingPattern, movementPattern);
+        this.name = name;
+        this.hp = hp;
+        this.maxHp = hp;
+        this.scoreValue = scoreValue;
+    }
+
     public boolean isAlive() {
         return this.hp > 0;
     }
@@ -46,7 +57,6 @@ public class Enemy extends GameObject {
         player.takeDamage(damage);
     }
 
-    // Soal 9: Auto-destroy saat defeated
     public boolean takeDamage(int damage) {
         boolean wasAlive = isAlive();
         this.hp -= damage;
@@ -73,6 +83,7 @@ public class Enemy extends GameObject {
 
     @Override
     public void update(float delta) {
+        super.update(delta); // Memanggil updateMovement dari EntityShooter
         if (collisionCooldown > 0) {
             collisionCooldown -= delta;
         }

@@ -11,17 +11,17 @@ public class Boss extends Enemy {
 
     public Boss(String name, int hp) {
         super(name, hp);
-        this.shootingPattern = new SpreadShot(200f, 3, 30f);
+        this.shootingPattern = new SpreadShot(200f, 3, 30f, 10);
     }
 
     public Boss(float x, float y) {
         super(x, y, 64, 64, 100f, null, "Rumia", 200, 500);
-        this.shootingPattern = new SpreadShot(200f, 3, 30f);
+        this.shootingPattern = new SpreadShot(200f, 3, 30f, 10);
     }
 
     public Boss(float x, float y, String name, int hp) {
         super(x, y, 64, 64, 100f, null, name, hp, 500);
-        this.shootingPattern = new SpreadShot(200f, 3, 30f);
+        this.shootingPattern = new SpreadShot(200f, 3, 30f, 10);
     }
 
     public void shootBullet(BulletManager bulletManager) {
