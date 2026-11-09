@@ -12,6 +12,7 @@ import com.fikri.frontend.commands.InputHandler;
 import com.fikri.frontend.objects.GameObject;
 import com.fikri.frontend.objects.Player;
 import com.fikri.frontend.objects.enemies.Boss;
+import com.fikri.frontend.objects.enemies.Enemy;
 import com.fikri.frontend.objects.enemies.Fairy;
 import com.fikri.frontend.objects.items.Item;
 import com.fikri.frontend.objects.items.ItemType;
@@ -20,24 +21,33 @@ import com.fikri.frontend.objects.Systems.AudioManager;
 import com.fikri.frontend.objects.Systems.BulletManager;
 import com.fikri.frontend.objects.Systems.CollisionReferee;
 import com.fikri.frontend.objects.Systems.EntityFactory;
+
+import com.fikri.frontend.objects.patterns.entityStrategy.LinearEntityMovement;
 import com.fikri.frontend.objects.patterns.entityStrategy.SCurveMovement;
 import com.fikri.frontend.objects.patterns.entityStrategy.TargetPointMovement;
+
 import com.fikri.frontend.objects.patterns.shootingStrategy.AlternatingRingShot;
 import com.fikri.frontend.objects.patterns.shootingStrategy.FrontShot;
+import com.fikri.frontend.objects.patterns.shootingStrategy.RingShot;
 import com.fikri.frontend.objects.patterns.shootingStrategy.SpreadShot;
+
 import com.fikri.frontend.ui.GameHUD;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class Main extends ApplicationAdapter {
 
     private SpriteBatch batch;
+
     private Player player;
     private Boss boss;
 
     private List<Fairy> fairy;
+    private List<Enemy> normalEnemies;
     private List<GameObject> entities;
 
     private Item powerItem;
@@ -55,8 +65,30 @@ public class Main extends ApplicationAdapter {
     private float waveTimer = 0f;
     private int wave1SpawnIndex = 0;
 
+    private float normalWaveTimer = 0f;
+    private int normalSpawnIndex = 0;
+
+    private float bossRespawnTimer = 0f;
+    private boolean bossRespawnPending = false;
+    private int bossCount = 0;
+
+    private final Map<Enemy, Float> normalEnemyShootTimers =
+        new HashMap<>();
+
     private final float[] fairySpawnX = {
         60f, 130f, 200f, 270f, 340f
+    };
+
+    private final float[] normalEnemySpawnX = {
+        80f, 192f, 304f
+    };
+
+    private final float[] normalEnemyHorizontalSpeed = {
+        -15f, 0f, 15f
+    };
+
+    private final float[] normalEnemyShootInterval = {
+        0.85f, 1.15f, 1.35f
     };
 
     @Override
@@ -64,6 +96,7 @@ public class Main extends ApplicationAdapter {
         batch = new SpriteBatch();
 
         fairy = new ArrayList<>();
+        normalEnemies = new ArrayList<>();
         entities = new ArrayList<>();
 
         bulletManager = new BulletManager();
@@ -79,6 +112,7 @@ public class Main extends ApplicationAdapter {
         player = EntityFactory.createPlayer(
             200f, 50f, "Reimu Hakurei", 100, 15, 3
         );
+
         player.registerObserver(gameHUD);
 
         createStageEntities();
@@ -88,7 +122,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void createStageEntities() {
-        boss = EntityFactory.createBoss(200f, 420f, "Rumia", 150);
+        spawnBoss();
 
         powerItem = EntityFactory.createItem(
             180f, 450f, ItemType.POWER
@@ -99,9 +133,14 @@ public class Main extends ApplicationAdapter {
         );
 
         entities.add(player);
-        entities.add(boss);
         entities.add(powerItem);
         entities.add(pointItem);
+    }
+
+    private void spawnBoss() {
+        boss = EntityFactory.createBoss(
+            200f, 420f, "Rumia", 150
+        );
 
         boss.setMovementPattern(
             new TargetPointMovement(200f, 420f, 150f)
@@ -113,18 +152,48 @@ public class Main extends ApplicationAdapter {
                 player, "bullet_danmaku_red"
             )
         );
+
+        entities.add(boss);
+
+        bossCount++;
+        bossRespawnTimer = 0f;
+        bossRespawnPending = false;
+        enemyShootTimer = 0f;
+        phaseTimer = 0f;
+        currentPhase = 0;
+
+        System.out.println("Boss ke-" + bossCount + " muncul!");
+    }
+
+    private void updateBossRespawn(float delta) {
+        if (boss != null && boss.isDestroyed() &&
+            !bossRespawnPending) {
+
+            bossRespawnPending = true;
+            bossRespawnTimer = 0f;
+        }
+
+        if (bossRespawnPending) {
+            bossRespawnTimer += delta;
+
+            if (bossRespawnTimer >= 5f) {
+                spawnBoss();
+            }
+        }
     }
 
     private void spawnFairy(int index) {
-        float x = fairySpawnX[index];
-
-        Fairy newFairy = EntityFactory.createFairy(
-            x, 500f, "S-Curve Fairy", 8, "fairy_idle_blue"
+        Fairy f = EntityFactory.createFairy(
+            fairySpawnX[index],
+            500f,
+            "S-Curve Fairy",
+            8,
+            "fairy_idle_blue"
         );
 
         boolean mirrored = index % 2 != 0;
 
-        newFairy.setMovementPattern(
+        f.setMovementPattern(
             new SCurveMovement(
                 85f,
                 (float) Math.toRadians(270),
@@ -132,19 +201,37 @@ public class Main extends ApplicationAdapter {
             )
         );
 
-        newFairy.setShootingPattern(
-            new FrontShot(150f, 10)
-        );
+        switch (index % 3) {
+            case 0:
+                f.setShootingPattern(
+                    new FrontShot(165f, 7)
+                );
+                break;
 
-        fairy.add(newFairy);
-        entities.add(newFairy);
+            case 1:
+                f.setShootingPattern(
+                    new SpreadShot(145f, 3, 35f, 7)
+                );
+                break;
+
+            default:
+                f.setShootingPattern(
+                    new RingShot(105f, 8, 7)
+                );
+                break;
+        }
+
+        f.setShootTiming(0.25f, 0.9f, 8);
+
+        fairy.add(f);
+        entities.add(f);
     }
 
     private void updateFairyWave(float delta) {
         waveTimer += delta;
 
         while (wave1SpawnIndex < fairySpawnX.length) {
-            float spawnTime = 0.5f + wave1SpawnIndex * 0.8f;
+            float spawnTime = 0.35f + wave1SpawnIndex * 0.4f;
 
             if (waveTimer < spawnTime) {
                 break;
@@ -154,24 +241,125 @@ public class Main extends ApplicationAdapter {
             wave1SpawnIndex++;
         }
 
+        if (wave1SpawnIndex >= fairySpawnX.length &&
+            waveTimer >= 6f) {
+
+            waveTimer = 0f;
+            wave1SpawnIndex = 0;
+        }
+
         fairy.removeIf(f ->
-            f == null || f.isDestroyed() || f.isOffScreen(416f, 560f)
+            f == null ||
+                f.isDestroyed() ||
+                f.isOffScreen(416f, 560f)
         );
     }
 
-    private void resetFairyWave() {
-        waveTimer = 0f;
-        wave1SpawnIndex = 0;
-        fairy.clear();
+    private void spawnNormalEnemy(int index) {
+        Enemy enemy = EntityFactory.createEnemy(
+            normalEnemySpawnX[index],
+            520f,
+            "Normal Enemy",
+            25
+        );
+
+        enemy.setMovementPattern(
+            new LinearEntityMovement(
+                normalEnemyHorizontalSpeed[index],
+                -45f
+            )
+        );
+
+        switch (index % 3) {
+            case 0:
+                enemy.setShootingPattern(
+                    new FrontShot(180f, 8)
+                );
+                break;
+
+            case 1:
+                enemy.setShootingPattern(
+                    new SpreadShot(155f, 3, 35f, 8)
+                );
+                break;
+
+            default:
+                enemy.setShootingPattern(
+                    new RingShot(115f, 8, 8)
+                );
+                break;
+        }
+
+        normalEnemies.add(enemy);
+        normalEnemyShootTimers.put(enemy, 0f);
+        entities.add(enemy);
+    }
+
+    private void updateNormalEnemyWave(float delta) {
+        normalWaveTimer += delta;
+
+        while (normalSpawnIndex < normalEnemySpawnX.length) {
+            float spawnTime = 0.35f + normalSpawnIndex * 0.5f;
+
+            if (normalWaveTimer < spawnTime) {
+                break;
+            }
+
+            spawnNormalEnemy(normalSpawnIndex);
+            normalSpawnIndex++;
+        }
+
+        if (normalSpawnIndex >= normalEnemySpawnX.length &&
+            normalWaveTimer >= 4.8f) {
+
+            normalWaveTimer = 0f;
+            normalSpawnIndex = 0;
+        }
+
+        normalEnemies.removeIf(enemy ->
+            enemy == null ||
+                enemy.isDestroyed() ||
+                enemy.isOffScreen(416f, 560f)
+        );
+
+        normalEnemyShootTimers.keySet().removeIf(enemy ->
+            enemy == null ||
+                enemy.isDestroyed() ||
+                enemy.isOffScreen(416f, 560f)
+        );
+    }
+
+    private void updateNormalEnemyShooting(float delta) {
+        for (Enemy enemy : normalEnemies) {
+            if (enemy == null || enemy.isDestroyed()) {
+                continue;
+            }
+
+            float timer =
+                normalEnemyShootTimers.getOrDefault(enemy, 0f);
+
+            timer += delta;
+
+            int index = normalEnemies.indexOf(enemy);
+            float interval =
+                normalEnemyShootInterval[Math.max(0, index) % 3];
+
+            if (timer >= interval) {
+                enemy.shootBullet(bulletManager);
+                timer = 0f;
+            }
+
+            normalEnemyShootTimers.put(enemy, timer);
+        }
     }
 
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
 
-        // Tekan R kapan saja untuk mengulang permainan.
         if (Gdx.input != null &&
             Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+
             restartGame();
             return;
         }
@@ -180,7 +368,8 @@ public class Main extends ApplicationAdapter {
             return;
         }
 
-        List<Command> commands = inputHandler.handleInput(delta);
+        List<Command> commands =
+            inputHandler.handleInput(delta);
 
         for (Command command : commands) {
             command.execute(player, bulletManager);
@@ -196,7 +385,10 @@ public class Main extends ApplicationAdapter {
             player, entities, bulletManager
         );
 
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.15f, 1f);
+        Gdx.gl.glClearColor(
+            0.1f, 0.1f, 0.15f, 1f
+        );
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         gameHUD.renderBackground();
@@ -214,58 +406,76 @@ public class Main extends ApplicationAdapter {
 
         batch.end();
 
-        player.renderFocusIndicator(gameHUD.getShapeRenderer());
+        player.renderFocusIndicator(
+            gameHUD.getShapeRenderer()
+        );
     }
 
     private void updateEnemyScheduler(float delta) {
+        updateBossRespawn(delta);
+
         updateFairyWave(delta);
 
-        // Boss menembak setiap 1,5 detik.
+        updateNormalEnemyWave(delta);
+        updateNormalEnemyShooting(delta);
+
         enemyShootTimer += delta;
 
-        if (enemyShootTimer >= 1.5f &&
-            boss != null && !boss.isDestroyed()) {
+        if (enemyShootTimer >= 1.2f &&
+            boss != null &&
+            !boss.isDestroyed() &&
+            !bossRespawnPending) {
 
             boss.shootBullet(bulletManager);
             enemyShootTimer = 0f;
         }
 
-        // Fairy menembak sesuai jadwal masing-masing.
         for (Fairy f : fairy) {
-            if (f != null && !f.isDestroyed() && f.canShoot(delta)) {
+            if (f != null &&
+                !f.isDestroyed() &&
+                f.canShoot(delta)) {
+
                 f.shootBullet(bulletManager);
             }
         }
 
-        // Pergantian strategi Boss setiap 4 detik.
-        phaseTimer += delta;
+        if (boss != null &&
+            !boss.isDestroyed() &&
+            !bossRespawnPending) {
 
-        if (phaseTimer >= 4f &&
-            boss != null && !boss.isDestroyed()) {
+            phaseTimer += delta;
 
-            phaseTimer = 0f;
-            currentPhase = (currentPhase + 1) % 2;
+            if (phaseTimer >= 3.5f) {
+                phaseTimer = 0f;
+                currentPhase = (currentPhase + 1) % 2;
 
-            if (currentPhase == 0) {
-                boss.setMovementPattern(
-                    new TargetPointMovement(120f, 420f, 150f)
-                );
+                if (currentPhase == 0) {
+                    boss.setMovementPattern(
+                        new TargetPointMovement(
+                            120f, 420f, 150f
+                        )
+                    );
 
-                boss.setShootingPattern(
-                    new SpreadShot(
-                        220f, 5, 25f, 10,
-                        player, "bullet_danmaku_red"
-                    )
-                );
+                    boss.setShootingPattern(
+                        new SpreadShot(
+                            220f, 5, 35f, 10,
+                            player, "bullet_danmaku_red"
+                        )
+                    );
 
-            } else {
-                boss.setMovementPattern(
-                    new TargetPointMovement(280f, 420f, 150f)
-                );
+                } else {
+                    boss.setMovementPattern(
+                        new TargetPointMovement(
+                            280f, 420f, 150f
+                        )
+                    );
 
-                boss.setShootingPattern(
-                    new AlternatingRingShot(180f, 16, 10)
-                );
+                    boss.setShootingPattern(
+                        new AlternatingRingShot(
+                            180f, 16, 10
+                        )
+                    );
+                }
             }
         }
     }
@@ -289,34 +499,43 @@ public class Main extends ApplicationAdapter {
             entity.update(delta);
 
             if (entity != player &&
-                (entity.isDestroyed() || entity.isOffScreen(width, height))) {
+                (entity.isDestroyed() ||
+                    entity.isOffScreen(width, height))) {
+
                 iterator.remove();
             }
         }
     }
 
     private void restartGame() {
-        // Bersihkan semua objek lama.
         entities.clear();
 
         bulletManager.clearEnemyBullets();
         bulletManager.clearPlayerBullets();
 
-        // Reset status permainan.
         enemyShootTimer = 0f;
         phaseTimer = 0f;
         currentPhase = 0;
 
-        resetFairyWave();
+        waveTimer = 0f;
+        wave1SpawnIndex = 0;
 
-        // Reset Player.
+        normalWaveTimer = 0f;
+        normalSpawnIndex = 0;
+
+        bossRespawnTimer = 0f;
+        bossRespawnPending = false;
+        bossCount = 0;
+
+        fairy.clear();
+        normalEnemies.clear();
+        normalEnemyShootTimers.clear();
+
         player.resetGame();
         player.setFocused(false);
 
-        // Buat ulang Boss dan item.
         createStageEntities();
 
-        // Perbarui referensi list pada sistem lain.
         inputHandler.setEntities(entities);
         bulletManager.setEntities(entities);
 
