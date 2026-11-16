@@ -1,3 +1,4 @@
+
 package com.fikri.frontend.objects.enemies;
 
 import com.badlogic.gdx.graphics.Color;
@@ -15,22 +16,26 @@ public class Fairy extends Enemy {
 
     public Fairy(String name, int hp) {
         super(150f, 380f, 24f, 24f, 100f, Color.PINK, name, hp, 500L);
+        setShotHitboxSize(28f, 28f);
         injectDefaultStrategies();
     }
 
     public Fairy(float x, float y) {
         super(x, y, 24f, 24f, 100f, Color.PINK, "Fairy", 20, 500L);
+        setShotHitboxSize(28f, 28f);
         injectDefaultStrategies();
     }
 
     public Fairy(float x, float y, String name, int hp) {
         super(x, y, 24f, 24f, 100f, Color.PINK, name, hp, 500L);
+        setShotHitboxSize(28f, 28f);
         injectDefaultStrategies();
     }
 
     public Fairy(float x, float y, String name, int hp,
                  float shootDelay, float shootInterval, int maxShots) {
         super(x, y, 24f, 24f, 100f, Color.PINK, name, hp, 500L);
+        setShotHitboxSize(28f, 28f);
         this.shootDelay = shootDelay;
         this.shootInterval = shootInterval;
         this.maxShots = Math.max(0, maxShots);

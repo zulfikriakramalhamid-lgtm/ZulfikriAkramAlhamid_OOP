@@ -1,3 +1,4 @@
+
 package com.fikri.frontend.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
@@ -32,7 +33,7 @@ public class Lwjgl3Launcher {
                 .refreshRate + 1
         );
 
-        configuration.setWindowedMode(800, 600);
+        configuration.setWindowedMode(640, 480);
 
         configuration.setWindowIcon(
             "libgdx128.png",

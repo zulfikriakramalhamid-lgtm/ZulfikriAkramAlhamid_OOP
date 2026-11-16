@@ -1,7 +1,9 @@
+
 package com.fikri.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.fikri.frontend.objects.BulletType;
 import com.fikri.frontend.objects.Collidable;
 import com.fikri.frontend.objects.GameObject;
@@ -17,6 +19,8 @@ public class Bullet extends GameObject {
     private float angle = 90f;
     private boolean isPlayerBullet;
     private boolean grazed = false;
+
+    private static final float PLAYER_SHOT_HITBOX = 12f;
 
     // Atribut Strategy Trajektori untuk Modul 9
     private BulletMovementPattern movementPattern;
@@ -75,14 +79,13 @@ public class Bullet extends GameObject {
         this.active = true;
         this.stateTime = 0f;
         this.grazed = false;
-        this.movementPattern = null; // Reset strategi saat daur ulang Object Pool
+        this.movementPattern = null;
     }
 
     @Override
     public void update(float delta) {
         super.update(delta);
 
-        // Delegasi ke BulletMovementPattern jika ada, jika null pakai gerak lurus bawaan
         if (movementPattern != null) {
             movementPattern.move(this, delta);
         } else {
@@ -115,6 +118,19 @@ public class Bullet extends GameObject {
             enemy.takeDamage(damage);
             destroy();
         }
+    }
+
+    public Rectangle getShotHitbox() {
+        if (!isPlayerBullet) {
+            return getCoreHitbox();
+        }
+
+        return new Rectangle(
+            x + (width - PLAYER_SHOT_HITBOX) / 2f,
+            y + (height - PLAYER_SHOT_HITBOX) / 2f,
+            PLAYER_SHOT_HITBOX,
+            PLAYER_SHOT_HITBOX
+        );
     }
 
     // Getter & Setter Strategy Trajektori (Modul 9)

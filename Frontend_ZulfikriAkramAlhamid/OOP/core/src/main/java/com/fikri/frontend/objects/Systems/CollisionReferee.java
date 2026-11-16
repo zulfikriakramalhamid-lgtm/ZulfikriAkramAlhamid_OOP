@@ -1,3 +1,4 @@
+
 package com.fikri.frontend.objects.Systems;
 
 import com.fikri.frontend.objects.GameObject;
@@ -12,6 +13,9 @@ import java.util.List;
 
 public class CollisionReferee {
 
+    private int defeatCounter = 0;
+    private int itemDropCount = 0;
+
     public void resolveCollisions(
         Player player,
         List<GameObject> entities,
@@ -23,29 +27,48 @@ public class CollisionReferee {
 
         List<GameObject> newDrops = new ArrayList<>();
 
-        // 2. Mediator checks Enemy Bullets vs Player (Core Hitbox vs Graze Hitbox)
-
-
-    // 1. Player Bullets vs Enemies
+        // 1. Player Bullets vs Enemies
         for (Bullet bullet : bulletManager.getActivePlayerBullets()) {
             if (bullet.isDestroyed()) continue;
 
             for (GameObject entity : entities) {
                 if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
-                    if (bullet.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
 
-                        boolean defeated = enemy.takeDamage(bullet.getDamage());
+                    if (bullet.getShotHitbox().overlaps(enemy.getShotHitbox())) {
 
-                        if (defeated) {
-                            player.addScore(enemy.getScoreValue());
+                        if (enemy.isDamageable()) {
+                            boolean defeated = enemy.takeDamage(bullet.getDamage());
 
-                            Item powerDrop = EntityFactory.createItem(
-                                enemy.getX(),
-                                enemy.getY(),
-                                ItemType.POWER
-                            );
+                            if (defeated) {
+                                player.addScore(enemy.getScoreValue());
 
-                            newDrops.add(powerDrop);
+                                ItemType dropType = null;
+
+                                if (enemy.getItemDrop() != null) {
+                                    dropType = enemy.getItemDrop();
+                                } else if (defeatCounter++ % 3 == 0) {
+                                    dropType = (itemDropCount++ % 2 == 0)
+                                        ? ItemType.POWER
+                                        : ItemType.POINT;
+                                }
+
+                                if (dropType != null) {
+                                    Item drop = EntityFactory.createItem(
+                                        enemy.getX(),
+                                        enemy.getY(),
+                                        dropType
+                                    );
+
+                                    newDrops.add(drop);
+
+                                    System.out.println(
+                                        "[CollisionReferee] Defeated "
+                                            + enemy.getName()
+                                            + "! Dropped "
+                                            + dropType
+                                    );
+                                }
+                            }
                         }
 
                         bullet.destroy();
@@ -60,27 +83,26 @@ public class CollisionReferee {
             if (bullet.isDestroyed()) continue;
             if (player.isDestroyed()) break;
 
-            // Direct Core Hit
             if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {
 
                 if (!player.isInvulnerable()) {
                     System.out.println(
                         "[CollisionReferee] CORE HIT! Enemy Bullet hit "
-                            + player.getName() + " for "
-                            + bullet.getDamage() + " DMG!"
+                            + player.getName()
+                            + " for "
+                            + bullet.getDamage()
+                            + " DMG!"
                     );
 
                     player.takeDamage(100, bulletManager, entities);
-
                     bullet.destroy();
                     break;
                 }
 
             } else if (
-                !bullet.hasBeenGrazed() &&
-                    bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())
+                !bullet.hasBeenGrazed()
+                    && bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())
             ) {
-                // Graze
                 bullet.setGrazed(true);
                 player.addGraze();
 
@@ -99,17 +121,17 @@ public class CollisionReferee {
             if (entity instanceof Item item && !item.isCollected()) {
 
                 if (
-                    item.getCoreHitbox().overlaps(player.getCoreHitbox()) ||
-                        item.getCoreHitbox().overlaps(player.getGrazeHitbox())
+                    item.getCoreHitbox().overlaps(player.getCoreHitbox())
+                        || item.getCoreHitbox().overlaps(player.getGrazeHitbox())
                 ) {
                     player.collectItem(item);
                 }
 
-            } else if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
+            } else if (entity instanceof Enemy enemy && enemy.isCollidable()) {
 
                 if (
-                    player.getCoreHitbox().overlaps(enemy.getCoreHitbox()) &&
-                        enemy.canCollide()
+                    player.getCoreHitbox().overlaps(enemy.getCoreHitbox())
+                        && enemy.canCollide()
                 ) {
                     if (!player.isInvulnerable()) {
                         System.out.println(
